@@ -1,6 +1,6 @@
 {
   "name": "private-parts",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Simple, easy private instance variables in JavaScript",
   "main": "index.js",
   "scripts": {
