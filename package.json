@@ -1,0 +1,29 @@
+{
+  "name": "private-parts",
+  "version": "0.0.0",
+  "description": "Simple, easy private instance variables in JavaScript",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --reporter spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/philipwalton/private-parts.git"
+  },
+  "keywords": [
+    "private",
+    "instance",
+    "variable",
+    "shim"
+  ],
+  "author": "philipwalton",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/philipwalton/private-parts/issues"
+  },
+  "homepage": "https://github.com/philipwalton/private-parts",
+  "devDependencies": {
+    "mocha": "^1.17.1",
+    "chai": "^1.9.0"
+  }
+}
