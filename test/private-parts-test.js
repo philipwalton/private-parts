@@ -101,7 +101,7 @@ describe('PrivateParts', function() {
 
       expect(p1.get(obj).name).to.equal('foo');
       expect(p2.get(obj).name).to.equal('bar');
-    })
+    });
 
   });
 

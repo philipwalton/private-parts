@@ -5,6 +5,6 @@ module.exports = {
     var privates = new PrivateParts();
     return function(instance) {
       return privates.get(instance);
-    }
+    };
   }
 };
