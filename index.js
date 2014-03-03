@@ -3,8 +3,10 @@ var PrivateParts = require('./lib/private-parts');
 module.exports = {
   scope: function() {
     var privates = new PrivateParts();
-    return function(instance) {
-      return privates.get(instance);
+    return function key(instance, destroy) {
+      return destroy === 'destroy'
+        ? privates.destroy(instance)
+        : privates.get(instance);
     };
   }
 };

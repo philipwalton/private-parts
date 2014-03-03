@@ -90,7 +90,7 @@ console.log(obj.priv) // undefined);
 
 ### But weren't private variables always possible?
 
-Private variables have always been possible, but private *instance* variables have never been possible. Any by instance variables I mean properties of an object that can only be accessed in a particular scope.
+Private variables have always been possible, but private *instance* variables have never been possible. And by instance variables I mean properties of an object that can only be accessed in a particular scope.
 
 Private instance variables are much more powerful than plain variable inside of a module closure because they are linked to a particular instance of an object.
 

@@ -105,4 +105,27 @@ describe('PrivateParts', function() {
 
   });
 
+  describe('#destroy', function() {
+
+    it('deletes an object from the PrivateParts instance hash '
+        + ' and deletes it\'s __pid__ property', function() {
+
+      var p = new PrivateParts();
+      var obj = {};
+
+      p.get(obj);
+
+      var pid = obj.__pid__;
+      expect(obj.__pid__).to.be.ok;
+      expect(p.hash[pid]).to.be.ok;
+
+      p.destroy(obj);
+
+      expect(obj.__pid__).to.be.undefined;
+      expect(p.hash[pid]).to.be.undefined;
+    });
+
+  });
+
+
 });
