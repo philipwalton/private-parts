@@ -1,12 +1,11 @@
 var expect = require('chai').expect;
-var MyObj = require('./class-fixture');
-var _ = require('..').scope();
+var Klass = require('./end-to-end-fixture');
 
 describe('Getter and Setters', function() {
 
   it('works like you would expect in many other languages', function() {
 
-    var obj = new MyObj();
+    var obj = new Klass();
 
     // Public properties can be seen as normal.
     expect(obj.pub).to.equal('I am public.');

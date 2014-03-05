@@ -1,6 +1,6 @@
-var _ = require('..').scope();
+var _ = require('..').createKey();
 
-function MyObj() {
+function Klass() {
 
   // This is a public property. It will be access to
   // anyone who has access to the instance.
@@ -11,12 +11,12 @@ function MyObj() {
   _(this).priv = 'I am private.';
 }
 
-MyObj.prototype.getPriv = function() {
+Klass.prototype.getPriv = function() {
   return _(this).priv;
 };
 
-MyObj.prototype.setPriv = function(value) {
+Klass.prototype.setPriv = function(value) {
   _(this).priv = value;
 };
 
-module.exports = MyObj;
+module.exports = Klass;

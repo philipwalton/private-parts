@@ -1,14 +1,14 @@
 var expect = require('chai').expect;
-var scope = require('../').scope;
+var createKey = require('../').createKey;
 
 describe('scope', function() {
 
   it('encloses an instance of PrivateParts#get', function() {
-    var _1 = scope();
-    var _2 = scope();
+    var _1 = createKey();
+    var _2 = createKey();
     var obj = {};
 
-    // make sure each invocation of `scope()`
+    // make sure each invocation of `createKey()`
     // creates a unique PrivateParts instance
     expect(_1(obj)).to.not.equal(_2(obj));
   });
@@ -20,7 +20,7 @@ describe('scope', function() {
     (function() {
 
       // inner scope 1
-      var _ = scope();
+      var _ = createKey();
 
       _(obj).foo = 'foo';
       _(obj).bar = 'bar';
@@ -32,7 +32,7 @@ describe('scope', function() {
     (function() {
 
       // inner scope 2
-      var _ = scope();
+      var _ = createKey();
 
       _(obj).fizz = 'fizz';
       _(obj).buzz = 'buzz';
@@ -42,7 +42,7 @@ describe('scope', function() {
     }());
 
     // outer scope
-    var _ = scope();
+    var _ = createKey();
     expect(_(obj)).to.deep.equal({});
 
   });
