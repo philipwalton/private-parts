@@ -4,7 +4,7 @@
   "description": "Simple, easy private instance variables in JavaScript",
   "main": "index.js",
   "scripts": {
-    "test": "jshint *.js lib/*.js test/*.js && mocha --harmony --reporter spec"
+    "test": "make test"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,7 @@
     "shelljs": "^0.2.6",
     "semver": "^2.2.1",
     "colors": "^0.6.2",
-    "moment": "^2.5.1"
+    "moment": "^2.5.1",
+    "browserify": "~3.32.0"
   }
 }
