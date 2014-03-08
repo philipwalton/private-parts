@@ -102,8 +102,20 @@ The shadow object is also created with the original object as it's prototype, wh
 
 ## WeakMap Shim
 
+If you're using Node and for some reason you can't use the `--harmony` flag, you'll have to manually add a WeakMap shim yourself.
+
+The weakmap module is what I use to do my browser testing on Testling. If you want to use it in node, follow these steps:
+
+```sh
+npm install --save weakmap
+```
+
+Then, somewhere in your application code, do something like this:
+
 ```js
 if (!("WeakMap" in global)) global.WeakMap = require('weakmap');
 ```
+
+I originally considered bundling this WeakMap shim with Private Parts, but I decided against it in favor of letting people choose their own shim. I may reconsider if enough people request it.
 
 
