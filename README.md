@@ -100,3 +100,10 @@ Private parts works by creating a shadow object for each object it receives. The
 
 The shadow object is also created with the original object as it's prototype, which means that the shadow object has access to both public and private properties, which can be very helpful if one of your private properties is a function that uses the `this` keyword.
 
+## WeakMap Shim
+
+```js
+if (!("WeakMap" in global)) global.WeakMap = require('weakmap');
+```
+
+

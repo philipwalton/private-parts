@@ -1,4 +1,4 @@
-var _ = require('..').createKey();
+var _ = require('../../').createKey();
 
 function Klass() {
 
