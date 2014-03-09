@@ -33,7 +33,8 @@
     "tape": "^2.10.2",
     "browserify": "^3.32.0",
     "testling": "^1.6.0",
-    "jshint": "^2.4.4"
+    "jshint": "^2.4.4",
+    "uglify-js": "^2.4.12"
   },
   "testling": {
     "scripts": "./node_modules/weakmap/weakmap.js",

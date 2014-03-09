@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Private Parts Example</title>
+  </head>
+  <body>
+
+    <!-- Include a WeakMap shim for browsers that don't support it -->
+    <script src="../node_modules/weakmap/weakmap.js"></script>
+
+    <!-- Load the Private Parts library -->
+    <script src="private-parts.js"></script>
+
+    <script>
+
+      // Create a Car "class" with real private members.
+      // It has a `drive` method that increases the mileage
+      // and a `getMileage` getter to report it. The mileage
+      // property is not accessibly on the Car instance.
+      var Car = (function() {
+
+        // Create the key function.
+        var _ = PrivateParts.createKey();
+
+        function Car(mileage) {
+          // Store the mileage property privately.
+          _(this).mileage = mileage;
+        }
+
+        Car.prototype.drive = function(miles) {
+          _(this).mileage += miles;
+        }
+
+        Car.prototype.getMileage = function() {
+          return _(this).mileage;
+        }
+
+        return Car;
+      }());
+
+      // Create a new Car instance.
+      var honda = new Car(0);
+
+      // Drive it.
+      honda.drive(500);
+
+      // Get its mileage.
+      console.log(honda.getMileage()); // 500
+
+      // Notice that the mileage property is not accessible!
+      console.log(honda.mileage); // undefined
+
+    </script>
+
+  </body>
+</html>

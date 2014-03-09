@@ -1,21 +1,28 @@
-all: install test test-browser
+MODS := ./node_modules/.bin
+
+all: install test test-browser build
 
 install:
 	@ npm install
 
 jshint:
-	node_modules/.bin/jshint *.js lib/*.js test/*.js
+	$(MODS)/jshint *.js lib/*.js test/*.js
 
 test: test-node test-browser
 
 # Start node with the harmony flag turned on
 # to run the tests in a native WeakMap environment.
 test-node: jshint
-	node --harmony node_modules/.bin/tape test/*.js
+	node --harmony $(MODS)/tape test/*.js
 
 # Run the tests in a headless browser using a
 # testling and a WeakMap shim.
 test-browser: jshint
-	node_modules/.bin/testling
+	$(MODS)/testling
+
+build:
+	@ $(MODS)/browserify -s PrivateParts index.js \
+		| $(MODS)/uglifyjs \
+		> dist/private-parts.js
 
 .PHONY: all install test

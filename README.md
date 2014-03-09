@@ -1,6 +1,8 @@
 Private Parts
 =============
 
+[![Build Status](https://secure.travis-ci.org/philipwalton/private-parts.png)](http://travis-ci.org/philipwalton/private-parts)
+
 In JavaScript the only way to make something private is to put it in a scope that other parts of the code don't have access to. There is no way to specify that particular properties of an object are private and as a result it's impossible to have *true* private instance variables.
 
 Private Parts fakes private instance variables and provides a clean and intuitive way to interact with them that is almost identical to accessing regular properties.
