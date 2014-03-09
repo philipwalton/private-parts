@@ -4,7 +4,7 @@ install:
 	@ npm install
 
 jshint:
-	@ jshint *.js lib/*.js test/*.js
+	node_modules/.bin/jshint *.js lib/*.js test/*.js
 
 test: test-node test-browser
 
@@ -16,6 +16,6 @@ test-node: jshint
 # Run the tests in a headless browser using a
 # testling and a WeakMap shim.
 test-browser: jshint
-	node node_modules/.bin/testling
+	node_modules/.bin/testling
 
 .PHONY: all install test
