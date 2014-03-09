@@ -4,7 +4,7 @@
   "description": "Simple, easy private instance variables in JavaScript",
   "main": "index.js",
   "scripts": {
-    "test": "make test"
+    "test": "make test-node"
   },
   "repository": {
     "type": "git",
