@@ -32,8 +32,8 @@
     "moment": "^2.5.1",
     "tape": "^2.10.2",
     "browserify": "^3.32.0",
-    "testling": "^1.6.0"
-
+    "testling": "^1.6.0",
+    "jshint": "^2.4.4"
   },
   "testling": {
     "scripts": "./node_modules/weakmap/weakmap.js",
