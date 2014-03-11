@@ -37,7 +37,7 @@
     "uglify-js": "^2.4.12"
   },
   "testling": {
-    "scripts": "./node_modules/weakmap/weakmap.js",
+    "scripts": "node_modules/weakmap/weakmap.js",
     "files": "test/*.js",
     "browsers": [
       "ie/6..latest",
