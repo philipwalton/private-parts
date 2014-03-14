@@ -39,14 +39,14 @@
   "testling": {
     "html": "test.html",
     "browsers": [
-        "ie/9..latest"
-        "firefox/3.5", "firefox/19", "firefox/latest", "firefox/nightly"
-        "chrome/latest", "chrome/canary",
-        "safari/5..latest",
-        "opera/12", "opera/next"
-        "iphone/6..latest",
-        "ipad/6..latest",
-        "android-browser/4.2..latest"
+      "chrome/latest", "chrome/canary",
+      "ff/3.5", "ff/19", "ff/latest", "ff/nightly",
+      "ie/9..latest",
+      "safari/5..latest",
+      "opera/12", "opera/next",
+      "iphone/6..latest",
+      "ipad/6..latest",
+      "android-browser/4.2..latest"
     ]
   }
 }
