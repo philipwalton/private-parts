@@ -18,6 +18,7 @@ test-node: jshint
 # Run the tests in a headless browser using a
 # testling and a WeakMap shim.
 test-browser: jshint
+	$(MODS)/browserify test/*.js > test/browser/bundle.js
 	$(MODS)/testling
 
 build:
