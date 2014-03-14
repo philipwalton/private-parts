@@ -37,12 +37,13 @@
     "uglify-js": "^2.4.12"
   },
   "testling": {
-    "html": "test.html",
+    "scripts": "test/browser/weakmap.js",
+    "files": "test/*.js",
     "browsers": [
       "chrome/latest", "chrome/canary",
-      "ff/3.5", "ff/19", "ff/latest", "ff/nightly",
+      "ff/4", "ff/19", "ff/latest", "ff/nightly",
       "ie/9..latest",
-      "safari/4..latest",
+      "safari/5.1..latest",
       "opera/12", "opera/next",
       "iphone/6..latest",
       "ipad/6..latest",
