@@ -42,7 +42,7 @@
       "chrome/latest", "chrome/canary",
       "ff/3.5", "ff/19", "ff/latest", "ff/nightly",
       "ie/9..latest",
-      "safari/5..latest",
+      "safari/4..latest",
       "opera/12", "opera/next",
       "iphone/6..latest",
       "ipad/6..latest",
