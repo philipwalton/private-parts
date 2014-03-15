@@ -58,5 +58,3 @@ test('PrivatePart#get'
   t.deepEqual(p2.get(obj), { name: 'bar' });
 
 });
-
-

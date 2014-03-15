@@ -2,7 +2,7 @@ var _ = require('../../').createKey();
 
 function Klass() {
 
-  // This is a public property. It will be access to
+  // This is a public property. It will be accessible to
   // anyone who has access to the instance.
   this.pub = 'I am public.';
 

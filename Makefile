@@ -6,7 +6,7 @@ install:
 	@ npm install
 
 jshint:
-	$(MODS)/jshint *.js lib/*.js test/*.js
+	$(MODS)/jshint index.js lib/*.js test/*.js
 
 test: test-node test-browser
 
@@ -17,16 +17,16 @@ test-node: jshint
 
 # Run the tests in a headless browser using a
 # testling and a WeakMap shim.
+# I have to copy here because testling doesn't seem to work
+# with files in the node_modules directory.
 test-browser: jshint
-	# I have to copy here because testling doesn't seem to work
-	# with files in the node_modules directory.
 	cp ./node_modules/weakmap/weakmap.js test/browser/weakmap.js
 	$(MODS)/browserify test/*.js > test/browser/bundle.js
 	$(MODS)/testling
 
-build:
+build: jshint
 	@ $(MODS)/browserify -s PrivateParts index.js \
 		| $(MODS)/uglifyjs \
-		> dist/private-parts.js
+		> private-parts.js
 
-.PHONY: all install test
+.PHONY: all install test test-node test-browser build

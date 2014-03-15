@@ -5825,7 +5825,7 @@ var _ = require('../../').createKey();
 
 function Klass() {
 
-  // This is a public property. It will be access to
+  // This is a public property. It will be accessible to
   // anyone who has access to the instance.
   this.pub = 'I am public.';
 
@@ -5905,7 +5905,5 @@ test('PrivatePart#get'
   t.deepEqual(p2.get(obj), { name: 'bar' });
 
 });
-
-
 
 },{"../lib/private-part":2,"tape":20}]},{},[32,33,35])
