@@ -1,12 +1,12 @@
 var test = require('tape');
-var PrivateParts = require('../lib/private-parts');
+var PrivatePart = require('../lib/private-part');
 
-test('PrivateParts#get'
+test('PrivatePart#get'
   + ' accepts an object and returns its private counterpart', function (t) {
 
   t.plan(4);
 
-  var p = new PrivateParts();
+  var p = new PrivatePart();
   var obj1 = {};
   var obj2 = {};
 
@@ -26,13 +26,13 @@ test('PrivateParts#get'
 
 });
 
-test('PrivateParts#get'
+test('PrivatePart#get'
   + ' returns a private object with the passed object as its prototype'
   + ' so it can access both private and public properties', function (t) {
 
   t.plan(1);
 
-  var p = new PrivateParts();
+  var p = new PrivatePart();
 
   var obj = {};
   var priv = p.get(obj);
@@ -41,14 +41,14 @@ test('PrivateParts#get'
 
 });
 
-test('PrivateParts#get'
+test('PrivatePart#get'
   + ' can handle an object that has already been processed by another'
-  + ' PrivateParts instance', function(t) {
+  + ' PrivatePart instance', function(t) {
 
   t.plan(2);
 
-  var p1 = new PrivateParts();
-  var p2 = new PrivateParts();
+  var p1 = new PrivatePart();
+  var p2 = new PrivatePart();
   var obj = {};
 
   p1.get(obj).name = 'foo';

@@ -1,26 +1,26 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var PrivateParts = require('./lib/private-parts');
+var PrivatePart = require('./lib/private-part');
 
 module.exports = {
   createKey: function() {
-    var privates = new PrivateParts();
+    var privates = new PrivatePart();
     return function createKey(instance) {
       return privates.get(instance);
     };
   }
 };
 
-},{"./lib/private-parts":2}],2:[function(require,module,exports){
-function PrivateParts() {
+},{"./lib/private-part":2}],2:[function(require,module,exports){
+function PrivatePart() {
   this.weakmap = new WeakMap();
 }
 
-PrivateParts.prototype.get = function(obj) {
+PrivatePart.prototype.get = function(obj) {
   if (!this.weakmap.has(obj)) this.weakmap.set(obj, Object.create(obj));
   return this.weakmap.get(obj);
 };
 
-module.exports = PrivateParts;
+module.exports = PrivatePart;
 
 },{}],3:[function(require,module,exports){
 /**
@@ -5772,7 +5772,7 @@ test('accessor methods', function(t) {
 
 },{"./fixtures/klass":34,"tape":20}],33:[function(require,module,exports){
 var test = require('tape');
-var createKey = require('../').createKey;
+var createKey = require('..').createKey;
 
 test('createKey'
   + ' encloses an instance of PrivateParts#get', function(t) {
@@ -5820,7 +5820,7 @@ test('createKey'
   t.deepEqual(_(obj), {});
 });
 
-},{"../":1,"tape":20}],34:[function(require,module,exports){
+},{"..":1,"tape":20}],34:[function(require,module,exports){
 var _ = require('../../').createKey();
 
 function Klass() {
@@ -5846,14 +5846,14 @@ module.exports = Klass;
 
 },{"../../":1}],35:[function(require,module,exports){
 var test = require('tape');
-var PrivateParts = require('../lib/private-parts');
+var PrivatePart = require('../lib/private-part');
 
-test('PrivateParts#get'
+test('PrivatePart#get'
   + ' accepts an object and returns its private counterpart', function (t) {
 
   t.plan(4);
 
-  var p = new PrivateParts();
+  var p = new PrivatePart();
   var obj1 = {};
   var obj2 = {};
 
@@ -5873,13 +5873,13 @@ test('PrivateParts#get'
 
 });
 
-test('PrivateParts#get'
+test('PrivatePart#get'
   + ' returns a private object with the passed object as its prototype'
   + ' so it can access both private and public properties', function (t) {
 
   t.plan(1);
 
-  var p = new PrivateParts();
+  var p = new PrivatePart();
 
   var obj = {};
   var priv = p.get(obj);
@@ -5888,14 +5888,14 @@ test('PrivateParts#get'
 
 });
 
-test('PrivateParts#get'
+test('PrivatePart#get'
   + ' can handle an object that has already been processed by another'
-  + ' PrivateParts instance', function(t) {
+  + ' PrivatePart instance', function(t) {
 
   t.plan(2);
 
-  var p1 = new PrivateParts();
-  var p2 = new PrivateParts();
+  var p1 = new PrivatePart();
+  var p2 = new PrivatePart();
   var obj = {};
 
   p1.get(obj).name = 'foo';
@@ -5908,4 +5908,4 @@ test('PrivateParts#get'
 
 
 
-},{"../lib/private-parts":2,"tape":20}]},{},[32,33,35])
+},{"../lib/private-part":2,"tape":20}]},{},[32,33,35])

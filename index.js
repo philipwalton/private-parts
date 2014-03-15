@@ -1,8 +1,8 @@
-var PrivateParts = require('./lib/private-parts');
+var PrivatePart = require('./lib/private-part');
 
 module.exports = {
   createKey: function() {
-    var privates = new PrivateParts();
+    var privates = new PrivatePart();
     return function createKey(instance) {
       return privates.get(instance);
     };

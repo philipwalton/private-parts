@@ -1,5 +1,5 @@
 var test = require('tape');
-var createKey = require('../').createKey;
+var createKey = require('..').createKey;
 
 test('createKey'
   + ' encloses an instance of PrivateParts#get', function(t) {

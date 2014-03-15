@@ -18,7 +18,7 @@
 
         // Create a Car "class" with real private members.
         // It has a `drive` method that increases the mileage
-        // and a `getMileage` getter to report it. The mileage
+        // and a `readMileage` getter to report it. The mileage
         // property is not accessibly on the Car instance.
         var Car = (function() {
 
@@ -34,7 +34,7 @@
             _(this).mileage += miles;
           }
 
-          Car.prototype.getMileage = function() {
+          Car.prototype.readMileage = function() {
             return _(this).mileage;
           }
 
@@ -48,7 +48,7 @@
         honda.drive(500);
 
         // Get its mileage.
-        console.log(honda.getMileage()); // 500
+        console.log(honda.readMileage()); // 500
 
         // Notice that the mileage property is not accessible!
         console.log(honda.mileage); // undefined
