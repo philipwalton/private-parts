@@ -38,11 +38,16 @@
     "scripts": "test/browser/weakmap.js",
     "files": "test/*.js",
     "browsers": [
-      "chrome/latest", "chrome/canary",
-      "ff/4", "ff/19", "ff/latest", "ff/nightly",
+      "chrome/latest",
+      "chrome/canary",
+      "ff/4",
+      "ff/19",
+      "ff/latest",
+      "ff/nightly",
       "ie/9..latest",
       "safari/5.1..latest",
-      "opera/12", "opera/next"
+      "opera/12..latest",
+      "opera/next"
     ]
   }
 }
