@@ -3,11 +3,11 @@ Private Parts
 
 [![Build Status](https://secure.travis-ci.org/philipwalton/private-parts.png)](http://travis-ci.org/philipwalton/private-parts)
 
-- [How It Works](#how-it-works)
-- [Browser and Environment Support](#browser-and-environment-support)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Building and Testing](#building-and-testing)
+1. [How It Works](#how-it-works)
+2. [Browser and Environment Support](#browser-and-environment-support)
+3. [Installation](#installation)
+4. [Usage](#usage)
+5. [Building and Testing](#building-and-testing)
 
 The Private Parts module provides a simple and intuitive way to achieve real property privacy in JavaScript. It's small, easy to use, requires minimal setup, and works in both node and the browser.
 
