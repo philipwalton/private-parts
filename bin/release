@@ -1,76 +1,78 @@
 #!/usr/bin/env node
 
-var fs = require("fs");
-var path = require("path");
-var shell = require("shelljs");
-var semver = require("semver");
-var colors = require("colors");
-var moment = require("moment");
+var fs = require('fs');
+var path = require('path');
+var shell = require('shelljs');
+var semver = require('semver');
+var colors = require('colors');
+var moment = require('moment');
 var version = determineVersion();
+
+// Make sure the tests pass and everything build before updating any files.
+run(['make']);
 
 updateChangelog();
 updateFiles();
 
 run([
-  "make",
-  "git checkout master",
-  "git add -A",
-  "git commit -m 'Tag version " + version + ".'",
-  "git tag " + version,
-  "git push origin master",
-  "git push --tags",
-  "npm publish"
+  'git checkout master',
+  'git add -A',
+  'git commit -m 'Tag version ' + version + '.'',
+  'git tag ' + version,
+  'git push origin master',
+  'git push --tags',
+  'npm publish'
 ]);
 
 function run(commands) {
   var command;
   while (command = commands.shift()) {
-    console.log("\n >> Running: ".grey + command + "\n");
+    console.log('\n >> Running: '.grey + command + '\n');
     if (shell.exec(command).code) {
-      error("Aborted due to errors trying to run: " + command);
+      error('Aborted due to errors trying to run: ' + command);
     }
   }
 }
 
 function error(msg) {
-  console.error("\n" + " >> ".grey + msg.red + "\n");
+  console.error('\n' + ' >> '.grey + msg.red + '\n');
   shell.exit(1);
 }
 
 function updateChangelog() {
-  var filename = path.resolve(__dirname, "../CHANGELOG.md");
-  var changelog = fs.readFileSync(filename, {encoding: "utf8"});
-  var entry = new RegExp("### (" + version + ")(?: \\((.+?)\\))?\\n");
+  var filename = path.resolve(__dirname, '../CHANGELOG.md');
+  var changelog = fs.readFileSync(filename, {encoding: 'utf8'});
+  var entry = new RegExp('### (' + version + ')(?: \\((.+?)\\))?\\n');
   // get the changelog entry for the release version, warn if it's not found
   if (!entry.test(changelog)) {
-    error("Cannot find entry for version " + version + " in CHANGELOG.md.");
+    error('Cannot find entry for version ' + version + ' in CHANGELOG.md.');
   }
   fs.writeFileSync(
     filename,
-    changelog.replace(entry, "### " + version + " (" + moment().format("MMMM D, YYYY") + ")\n")
+    changelog.replace(entry, '### ' + version + ' (' + moment().format('MMMM D, YYYY') + ')\n')
   );
 }
 
 function updateFiles() {
-  var files = ["../package.json"];
+  var files = ['../package.json'];
   files.forEach(function(file) {
     var filepath = path.resolve(__dirname, file);
     var data = JSON.parse(fs.readFileSync(filepath));
     data.version = version;
-    fs.writeFileSync(filepath, JSON.stringify(data, null, 2) + "\n");
+    fs.writeFileSync(filepath, JSON.stringify(data, null, 2) + '\n');
   });
 }
 
 function determineVersion() {
-  var oldVersion = JSON.parse(fs.readFileSync("./package.json")).version;
+  var oldVersion = JSON.parse(fs.readFileSync('./package.json')).version;
   var newVersion = process.argv[2];
   if (!newVersion) {
-    error("You must provide a version number.");
-  } else if (["--major", "--minor", "--patch"].indexOf(newVersion) >= 0) {
+    error('You must provide a version number.');
+  } else if (['--major', '--minor', '--patch'].indexOf(newVersion) >= 0) {
     newVersion = semver.inc(oldVersion, newVersion.substr(2));
   } else {
     newVersion = semver.parse(newVersion);
-    if (!newVersion) error("Version number is invalid.");
+    if (!newVersion) error('Version number is invalid.');
   }
   return newVersion.toString();
 }

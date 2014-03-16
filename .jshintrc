@@ -1,5 +1,6 @@
 {
   "boss": true,
   "expr": true,
-  "laxbreak": true
+  "laxbreak": true,
+  "quotmark": "single"
 }
