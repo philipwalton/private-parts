@@ -3,11 +3,17 @@ Private Parts
 
 [![Build Status](https://secure.travis-ci.org/philipwalton/private-parts.png)](http://travis-ci.org/philipwalton/private-parts)
 
+- [How It Works](#how-it-works)
+- [Browser and Environment Support](#browser-and-environment-support)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Building and Testing](#building-and-testing)
+
 The Private Parts module provides a simple and intuitive way to achieve real property privacy in JavaScript. It's small, easy to use, requires minimal setup, and works in both node and the browser.
 
 For more information on how Private Parts works and the problems it solves, see my article introducing it.
 
-## How it Works
+## How It Works
 
 Most people deal with private properties in JavaScript by prefixing them with an underscore and hoping that everyone using their library knows and respects the convention.
 
@@ -117,7 +123,7 @@ Here's what the prototype chain looks like for the `MyClass` example above:
 _(this)  =>  this  => MyClass.prototype
 ```
 
-## Browser/Environment Support
+## Browser and Environment Support
 
 [![Environment Support](https://ci.testling.com/philipwalton/private-parts.png)](https://ci.testling.com/philipwalton/private-parts)
 
@@ -206,4 +212,4 @@ make build
 make
 ```
 
-Note, Private Parts uses [Browserify](http://browserify.org/) to build the browser version of the library as well as run the tests in the browser.
+Private Parts uses [Browserify](http://browserify.org/) to build the browser version of the library as well as run the tests in the browser.
