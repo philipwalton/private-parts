@@ -9,7 +9,7 @@ Private Parts
 4. [Usage](#usage)
 5. [Building and Testing](#building-and-testing)
 
-The Private Parts module provides a simple and intuitive way to achieve real property privacy in JavaScript. It's small, easy to use, requires minimal setup, and works in both node and the browser.
+The Private Parts module provides a simple and intuitive way to shim private properties in JavaScript. It's small, easy to use, requires minimal setup, and works in both node and the browser.
 
 For more information on how Private Parts works and the problems it solves, see my article introducing it.
 
