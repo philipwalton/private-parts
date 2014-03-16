@@ -1,7 +1,7 @@
 Private Parts
 =============
 
-[![Build Status](//secure.travis-ci.org/philipwalton/private-parts.png)](http://travis-ci.org/philipwalton/private-parts)
+[![Build Status](https://secure.travis-ci.org/philipwalton/private-parts.png)](http://travis-ci.org/philipwalton/private-parts)
 
 1. [How It Works](#how-it-works)
 2. [Browser and Environment Support](#browser-and-environment-support)
@@ -127,7 +127,7 @@ _(this)  >>>  this  >>> MyClass.prototype
 
 ## Browser and Environment Support
 
-[![Environment Support](//ci.testling.com/philipwalton/private-parts.png)](https://ci.testling.com/philipwalton/private-parts)
+[![Environment Support](https://ci.testling.com/philipwalton/private-parts.png)](https://ci.testling.com/philipwalton/private-parts)
 
 Private Parts works in both Node and the browser. It uses the UMD pattern, so it can be included in your application as either an AMD module or a global variable.
 
