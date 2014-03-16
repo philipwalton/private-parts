@@ -15,9 +15,9 @@ For more information on how Private Parts works and the problems it solves, see 
 
 ## How It Works
 
-Most people deal with private properties in JavaScript by prefixing them with an underscore and hoping that everyone using their library knows and respects the convention.
+Most people deal with private properties in JavaScript by prefixing them with an underscore and hoping that everyone using their library understands and respects this convention.
 
-Consider this example:
+Consider the following example:
 
 ```javascript
 function Car() {
@@ -37,12 +37,14 @@ Car.prototype.readMileage() {
 }
 ```
 
-This is okay, but anyone familiar with JavaScript will easily spot the problem: the type checking being done in the `drive` method is essentially useless. Anyone with access to the Car instance could easily set `_mileage` to whatever they want.
+This is okay, but anyone familiar with JavaScript will easily spot the problem: the validation check in the `drive` method is essentially useless. Anyone with access to the Car instance could easily set `_mileage` to whatever they want.
 
 ```javascript
 var honda = new Car();
 honda._mileage = 'pwned';
 ```
+
+### A Better Way
 
 Here's how you solve this problem and get real privacy using Private Parts. Notice that the code is almost exactly the same:
 
@@ -73,21 +75,21 @@ var honda = new Car();
 console.log(honda.mileage); // undefined
 ```
 
-This is made possible by using `_()`, which I call the "key function".
+This is made possible by using `_()`, which I call the "key function" or often just the "key".
 
 ### The Key Function
 
-The key function is very simple to use. It accepts an object and returns a new object that is uniquely linked to the passed object, yet inaccessible without the key function itself. **Note: for future reference, I refer to the passed object as the "public instance" and the returned object as the "private instance"**.
+The key function is very simple to use. It accepts an object and returns a new object that is uniquely linked to the passed object, yet inaccessible without the key function itself. From here on, I will refer to the passed object as the "public instance" and the returned object as the "private instance".
 
-You can create the key function by calling `createKey()`, the sole method provided by the Private Parts module. I usually assign the key function to the `_` variable (since an underscore is only one character and often used to denote privacy) but you can choose any variable you like.
+You can create the key function by calling `createKey()`, the sole method provided by the Private Parts module. I usually assign the key to the `_` variable (since an underscore is only one character and often used to denote privacy) but you can choose any variable you like.
 
-The key function (like any variable in JavaScript) is only accessible to the scope it's defined in. This is what makes private properties possible. The key function has access to the private instance, but outside code does not have access to the key function.
+The key (like any variable in JavaScript) is only accessible to the scope it's defined in. This is what makes private properties possible. The key has access to the private instance, but outside code does not have access to the key.
 
-### Using the Key Function
+### Using the Key
 
-The first step is to create the key function. Make sure to pay attention to the scope you're in. If you're in the browser, make sure you don't accidentally expose the key function to the global scope.
+The first step is to create the key. Make sure to pay attention to the scope you're in. If you're in the browser, make sure you don't accidentally expose the key to the global scope.
 
-The second step is to use the key function to get and set properties. Any time you want a property to be private, use the key function to set that property on the private instance. Since it's actually private, you'll need to create getters and setters to access it.
+The second step is to use the key to get and set properties. Any time you want a property to be private, use the key to set that property on the private instance. Since it's actually private, you'll need to create getters and setters to access it.
 
 ```javascript
 var _ = require('private-parts').createKey();
@@ -115,21 +117,25 @@ Note that you don't need to check if the private instance exists before using it
 
 The private instance returned by the key function is created with the public instance as its prototype. This, for all intents and purposes, means that the private instance can basically be used exactly like the public instance (though not vise-versa).
 
-This can be helpful if you assign a function to the private instance, and inside of that function you use the `this` context. `this`, in that case, will be the private instance, but through the prototype chain it will also have access to all public instance properties as well as any properties of the instance constructor's prototype.
+This can be helpful if you assign a function to the private instance, and inside of that function you reference `this`, which in that context will be the private instance. Because the public instance is set as the prototype, the private instance will be able to reference all public instance properties as well as any properties of the instance constructor's prototype.
 
 Here's what the prototype chain looks like for the `MyClass` example above:
 
 ```
-_(this)  =>  this  => MyClass.prototype
+_(this)  >>>  this  >>> MyClass.prototype
 ```
 
 ## Browser and Environment Support
 
 [![Environment Support](https://ci.testling.com/philipwalton/private-parts.png)](https://ci.testling.com/philipwalton/private-parts)
 
-Private Parts works in both Node and the Browser. It uses the UMD pattern, so it can be included in your application as either an AMD module or a global variable.
+Private Parts works in both Node and the browser. It uses the UMD pattern, so it can be included in your application as either an AMD module or a global variable.
 
-It's important to note that Private Parts uses the [ES6 WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) data structure. **If you need to support an environment without WeakMaps, you can still use Private Parts, you just have to include one of the many available polyfills**. I use this [WeakMap Polyfill](https://github.com/Benvie/WeakMap) by Brandon Benvie of Mozilla. For a list of what environments support WeakMap natively, see [Kangax's ES6 compatibility tables](http://kangax.github.io/es5-compat-table/es6/#WeakMap).
+It's important to note that Private Parts uses the [ES6 WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) data structure. **If you need to support an environment without WeakMaps, you can still use Private Parts, you just have to include one of the many available polyfills**.
+
+I use this [WeakMap Polyfill](https://github.com/Benvie/WeakMap) by Brandon Benvie of Mozilla, which supports IE9+. Others may have more comprehensive browser support.
+
+For a list of environments that support WeakMap natively, see [Kangax's ES6 compatibility tables](http://kangax.github.io/es5-compat-table/es6/#WeakMap).
 
 ## Installation
 
@@ -197,6 +203,22 @@ var Car = (function() {
 }());
 ```
 
+### With a Polyfill
+
+In node:
+
+```javascript
+// Put this code year the main entry point of your app.
+if (!('WeakMap' in global)) global.WeakMap = require('some-weapmap-polyfill');
+```
+
+In the browser:
+
+```xml
+<script src="path/to/some-weakmap-polyfill.js"></script>
+<script src="path/to/private-parts.js"></script>
+```
+
 ## Building and Testing
 
 To run the tests and build the browser version of the library, use the following commands:
@@ -212,4 +234,5 @@ make build
 make
 ```
 
-Private Parts uses [Browserify](http://browserify.org/) to build the browser version of the library as well as run the tests in the browser.
+Private Parts uses [Browserify](http://browserify.org/) to build the browser version of the library as well as browser versions of the tests. It uses [Travic-CI](https://travis-ci.org/) to run the tests in Node.js and [Testling](https://ci.testling.com/) to run the tests in actual browsers on each commit.
+
