@@ -1,7 +1,7 @@
 {
   "name": "private-parts",
   "version": "0.2.0",
-  "description": "A simple and intuitive way to shim private properties in JavaScript.",
+  "description": "A simple and intuitive way to shim private methods and properties in JavaScript.",
   "main": "index.js",
   "scripts": {
     "test": "make test-node"
