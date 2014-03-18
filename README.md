@@ -1,7 +1,7 @@
 Private Parts
 =============
 
-[![Build Status](//secure.travis-ci.org/philipwalton/private-parts.png)](//travis-ci.org/philipwalton/private-parts)
+[![Build Status](https://secure.travis-ci.org/philipwalton/private-parts.png)](https://travis-ci.org/philipwalton/private-parts)
 
 1. [Introduction](#introduction)
 2. [Installation](#installation)
@@ -282,13 +282,20 @@ bower install --save private-parts
 
 ## Browser and Environment Support
 
-[![Environment Support](//ci.testling.com/philipwalton/private-parts.png)](//ci.testling.com/philipwalton/private-parts)
+Private Parts has been tested and known to work in the following environments:
+
+* Node.js
+* Chrome 6+
+* Firefox 4+
+* Safari 5.1+
+* Internet Explorer 9+
+* Opera 12+
 
 Private Parts works in both Node and the browser. It uses the UMD pattern, so it can be included in your application as either an AMD module or a global variable.
 
 It's important to note that Private Parts uses the [ES6 WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) data structure. **If you need to support an environment without WeakMaps, you can still use Private Parts, you just have to include one of the many available polyfills**.
 
-I use this [WeakMap Polyfill](https://github.com/Benvie/WeakMap) by Brandon Benvie of Mozilla, which supports IE9+. Others may have more comprehensive browser support.
+I use this [WeakMap Polyfill](https://github.com/Benvie/WeakMap) by Brandon Benvie of Mozilla, which give me the browser support I list above. If you need better support you should use a different polyfill along with an ES5 shim (for IE8 and lower).
 
 For a list of environments that support WeakMap natively, see [Kangax's ES6 compatibility tables](http://kangax.github.io/es5-compat-table/es6/#WeakMap).
 
