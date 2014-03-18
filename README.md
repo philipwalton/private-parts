@@ -282,7 +282,7 @@ bower install --save private-parts
 
 ## Browser and Environment Support
 
-Private Parts has been tested and known to work in the following environments:
+Private Parts has [been tested](https://ci.testling.com/philipwalton/private-parts) and known to work in the following environments:
 
 * Node.js
 * Chrome 6+
