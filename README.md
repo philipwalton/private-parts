@@ -1,19 +1,19 @@
 Private Parts
 =============
 
-[![Build Status](https://secure.travis-ci.org/philipwalton/private-parts.png)](http://travis-ci.org/philipwalton/private-parts)
+[![Build Status](//secure.travis-ci.org/philipwalton/private-parts.png)](//travis-ci.org/philipwalton/private-parts)
 
-1. [How It Works](#how-it-works)
-2. [Browser and Environment Support](#browser-and-environment-support)
-3. [Installation](#installation)
-4. [Usage](#usage)
+1. [Introduction](#introduction)
+2. [Installation](#installation)
+3. [How It Works](#how-it-works)
+4. [Browser and Environment Support](#browser-and-environment-support)
 5. [Building and Testing](#building-and-testing)
 
-The Private Parts module provides a simple and intuitive way to shim private properties in JavaScript. It's small, easy to use, requires minimal setup, and works in both node and the browser.
+The Private Parts module provides a simple and intuitive way to shim private properties and methods in JavaScript. It's small, easy to use, requires minimal setup, and works in both node and the browser.
 
-For more information on how Private Parts works and the problems it solves, see my article introducing it.
+For more information on how Private Parts works and the problems it solves, see my [article introducing it](#).
 
-## How It Works
+## Introduction
 
 Most people deal with private properties in JavaScript by prefixing them with an underscore and hoping that everyone using their library understands and respects this convention.
 
@@ -68,14 +68,18 @@ Car.prototype.readMileage() {
 }
 ```
 
-The first example used `this._mileage` to reference the private mileage property of each instance. In the second example, all occurances of `this._mileage` have been replaced with `_(this).mileage`. As a result, `mileage` is never actually a property of `this`, so it can't be tampered with.
+The first example used `this._mileage` to reference the "private" mileage property of each instance. In the second example, all occurances of `this._mileage` have been replaced with `_(this).mileage`. As a result, `mileage` is never actually a property of `this`, so it can't be tampered with.
 
 ```javascript
 var honda = new Car();
 console.log(honda.mileage); // undefined
 ```
 
-This is made possible by using `_()`, which I call the "key function" or often just the "key".
+## How it works
+
+If you look at the Private Parts example in the example above, you'll notice that the `this` context is wrapped in the `_()` function whenever it needs to access private data.
+
+I call this function the "key function" or often just the "key".
 
 ### The Key Function
 
@@ -95,10 +99,7 @@ The second step is to use the key to get and set properties. Any time you want a
 var _ = require('private-parts').createKey();
 
 function MyClass() {
-  // `publicProperty` is accessible to anyone with the instance
-  this.publicProperty = 'foo';
-
-  // `privateProperty` is not accessible outside
+  // `privateProperty` is not accessible outside this module
   _(this).privateProperty = 'bar';
 }
 
@@ -111,35 +112,161 @@ MyClass.prototype.setPrivateProperty = function(value) {
 }
 ```
 
-Note that you don't need to check if the private instance exists before using it. The key function automatically creates it if it doesn't exist and simply returns it if it does.
+Note that you don't need to check if the private instance exists before using it. The key function automatically creates a private instance if one doesn't exsits, and it return the private instance if it does.
+
+### Private Methods
+
+Private methods have always been semi-possible in JavaScript thanks to dynamic `this` and the function methods `call` and `apply`:
+
+```javascript
+// Some function in a closure.
+function privateMethod() {
+  this.doSomething();
+}
+
+// The prototype method can call the private method
+// and retain the `this` context.
+SomeClass.prototype.publicMethod = function() {
+  privateMethod.call(this);
+}
+```
+
+But using `call` or `apply` isn't as convienent as invoking a private method directly on an object, plus it doesn't allow for chaining of multiple methods together.
+
+Private Parts has a solution to this problem.
+
+The `createKey` function accepts an optional parameter that, when passed, is used as the prototype for any private instances created by that key. This object becomes a sort of "private prototype". It's accessible to all of the private intances but not to any of the public ones.
+
+```javascript
+var privateMethods = {
+  privateMethodOne: function() { /* ... */ },
+  privateMethodTwo: function() { /* ... */ }
+}
+
+var _ = require('private-parts').createKey(privateMethods);
+
+SomeClass.prototype.publicMethod = function() {
+  // Now the private methods can be invoked
+  // directly on the private instances.
+  _(this).privateMethodOne();
+  _(this).privateMethodOne();
+}
+```
+
+Most strategies for making private methods in JavaScript involve each new instance getting a copy of each method. This approach is far more efficient because the private methods object is instead set in the prototype chain, so only one copy is ever made, no matter how many new instances are created.
+
+It's worth noting that in some cases, a private method might need to call a public method. In order for that to work, the private methods object needs to have the constructor's prototype in its prototype chain. That will enable the `this` context within private methods to have access to both private and public methods. Here's what that looks like:
+
+```javascript
+var privateMethods = Object.create(SomeClass.prototype);
+privateMethods.privateMethodOne = function() { /* ... */ };
+privateMethods.privateMethodTwo = function() { /* ... */ };
+```
+
+Hopefully this isn't too confusing, but in case it is, the next section will visually show what the prototype chain looks like in each of these three scenarios.
 
 ### The Prototype Chain
 
-The private instance returned by the key function is created with the public instance as its prototype. This, for all intents and purposes, means that the private instance can basically be used exactly like the public instance (though not vise-versa).
+When you create the key function by passing a private methods object to `createKey(privateMethods)`, each private instance created with that key function will have the private methods object as its prototype.
 
-This can be helpful if you assign a function to the private instance, and inside of that function you reference `this`, which in that context will be the private instance. Because the public instance is set as the prototype, the private instance will be able to reference all public instance properties as well as any properties of the instance constructor's prototype.
+```javascript
+var privateMethods = { /* ... */ };
+var _ = require('private-parts').createKey(privateMethods);
 
-Here's what the prototype chain looks like for the `MyClass` example above:
-
+// Now the prototype chain looks like this:
+_(this)  >>>  privateMethods
 ```
-_(this)  >>>  this  >>> MyClass.prototype
+
+If you do not pass an object to the `createKey()` function, then private instances will set their corresponding public instance as their prototype.
+
+```javascript
+var _ = require('private-parts').createKey();
+
+// Now the prototype chain looks like this:
+_(this)  >>>  this  >>>  SomeClass.prototype
 ```
 
-## Browser and Environment Support
+To get the best of both worlds, you can create a private methods object that has the constructor's prototype as its prototype:
 
-[![Environment Support](https://ci.testling.com/philipwalton/private-parts.png)](https://ci.testling.com/philipwalton/private-parts)
+```javascript
+var privateMethods = Object.create(SomeClass.prototype, { /* ... */ };
+var _ = require('private-parts').createKey(privateMethods);
 
-Private Parts works in both Node and the browser. It uses the UMD pattern, so it can be included in your application as either an AMD module or a global variable.
+// Now the prototype chain looks like this:
+_(this)  >>>  privateMethods  >>>  SomeClass.prototype
+```
 
-It's important to note that Private Parts uses the [ES6 WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) data structure. **If you need to support an environment without WeakMaps, you can still use Private Parts, you just have to include one of the many available polyfills**.
+You may notice that when you use a private methods object, the public instance (i.e. `this`) is not in the prototype chain. This means that if you want to use private methods, you can't also store public properties (own properties) on the public instance and have them be accessible to private instances via the prototype lookup chain. This is usually not a problem though, since most of the time all instance members are private. Getters and setters can always be used when public access is needed.
 
-I use this [WeakMap Polyfill](https://github.com/Benvie/WeakMap) by Brandon Benvie of Mozilla, which supports IE9+. Others may have more comprehensive browser support.
+### A Complete Example
 
-For a list of environments that support WeakMap natively, see [Kangax's ES6 compatibility tables](http://kangax.github.io/es5-compat-table/es6/#WeakMap).
+The following is a complete example that showcases both private properties and methods:
+
+```javascript
+function Car() {
+  _(this).mileage = 0;
+  _(this).mileageAtLastOilChange = 0;
+  _(this).mileageAtLastTireRotation = 0;
+}
+
+// Add methods to the public prototype.
+Car.prototype.drive = function(miles) {
+  if (typeof miles == 'number' && miles > 0) {
+    _(this).mileage += miles;
+  } else {
+    throw new Error('drive only accepts positive numbers');
+  }
+};
+
+Car.prototype.getMileage = function() {
+  return _(this).mileage;
+}
+
+Car.prototype.getMilesSinceLastOilChange = function() {
+  return _(this).mileage - _(this).mileageAtLastOilChange;
+}
+
+Car.prototype.getMilesSinceLastTireRotation = function() {
+  return _(this).mileage - _(this).mileageAtLastTireRotation;
+}
+
+Car.prototype.changeOil = function() {
+  if ( _(this).shouldChangeOil() ) {
+    _(this).mileageAtLastOilChange = _(this).mileage;
+  } else {
+    return("No oil change is needed at this time.")
+  }
+}
+
+Car.prototype.rotateTires = function() {
+  if ( _(this).shouldRotateTires() ) {
+    _(this).mileageAtLastTireRotation = _(this).mileage;
+  } else {
+    return("No tire rotation is needed at this time.")
+  }
+}
+
+// Create the "private prototype".
+var privateMethods = Object.create(Car.prototype);
+
+// Add methods to the "private prototype".
+privateMethods.shouldChangeOil = function() {
+  return this.getMilesSinceLastOilChange() > 5000 ? true : false
+};
+
+privateMethods.shouldRotateTires = function() {
+  return this.getMilesSinceLastTireRotation() > 5000 ? true : false
+};
+
+// Create the key function with setting the private methods.
+var _ = require('private-parts').createKey(privateMethods);
+
+module.exports = Car;
+```
 
 ## Installation
 
-Private Parts is incredibly small. It's 1.2K minified and only about 0.5K gzipped.
+Private Parts is incredibly small. It's less than 1K minified and gzipped.
 
 To install from NPM:
 
@@ -153,7 +280,19 @@ From Bower:
 bower install --save private-parts
 ```
 
-## Usage
+## Browser and Environment Support
+
+[![Environment Support](//ci.testling.com/philipwalton/private-parts.png)](//ci.testling.com/philipwalton/private-parts)
+
+Private Parts works in both Node and the browser. It uses the UMD pattern, so it can be included in your application as either an AMD module or a global variable.
+
+It's important to note that Private Parts uses the [ES6 WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) data structure. **If you need to support an environment without WeakMaps, you can still use Private Parts, you just have to include one of the many available polyfills**.
+
+I use this [WeakMap Polyfill](https://github.com/Benvie/WeakMap) by Brandon Benvie of Mozilla, which supports IE9+. Others may have more comprehensive browser support.
+
+For a list of environments that support WeakMap natively, see [Kangax's ES6 compatibility tables](http://kangax.github.io/es5-compat-table/es6/#WeakMap).
+
+### Usage Examples
 
 In node:
 
@@ -209,13 +348,13 @@ In node:
 
 ```javascript
 // Put this code year the main entry point of your app.
-if (!('WeakMap' in global)) global.WeakMap = require('some-weapmap-polyfill');
+if (!('WeakMap' in global)) global.WeakMap = require('weapmap');
 ```
 
 In the browser:
 
 ```xml
-<script src="path/to/some-weakmap-polyfill.js"></script>
+<script src="path/to/weakmap.js"></script>
 <script src="path/to/private-parts.js"></script>
 ```
 
@@ -235,4 +374,3 @@ make
 ```
 
 Private Parts uses [Browserify](http://browserify.org/) to build the browser version of the library as well as browser versions of the tests. It uses [Travic-CI](https://travis-ci.org/) to run the tests in Node.js and [Testling](https://ci.testling.com/) to run the tests in actual browsers on each commit.
-
