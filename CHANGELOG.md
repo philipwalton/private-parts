@@ -1,4 +1,4 @@
-### 0.3.0
+### 0.3.0 (March 17, 2014)
 
 * Add support for private methods on the private instance prototype.
 
