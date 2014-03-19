@@ -1,6 +1,21 @@
 var test = require('tape');
 var PrivatePart = require('../lib/private-part');
 
+test('PrivatePart#constructor'
+  + ' accepts an optional object to be set as the'
+  + ' prototype for all private instances.', function(t) {
+
+  t.plan(1);
+
+  var proto = {};
+  var p = new PrivatePart(proto);
+
+  var publicInstance = {};
+  var privateInstance = p.getPrivateInstance(publicInstance);
+
+  t.equal(Object.getPrototypeOf(privateInstance), proto);
+});
+
 test('PrivatePart#get'
   + ' accepts an object and returns its private counterpart.', function (t) {
 
@@ -10,38 +25,38 @@ test('PrivatePart#get'
   var obj1 = {};
   var obj2 = {};
 
-  p.get(obj1).foo = 'bar';
-  p.get(obj1).fizz = 'buzz';
+  p.getPrivateInstance(obj1).foo = 'bar';
+  p.getPrivateInstance(obj1).fizz = 'buzz';
 
-  p.get(obj2).foo = 'BAR';
-  p.get(obj2).fizz = 'BUZZ';
+  p.getPrivateInstance(obj2).foo = 'BAR';
+  p.getPrivateInstance(obj2).fizz = 'BUZZ';
 
   // No private variables should be stored on the instance,
   // they should only be stored on the private counterpart.
   t.deepEqual(obj1, {});
   t.deepEqual(obj2, {});
 
-  t.deepEqual(p.get(obj1), { foo: 'bar', fizz: 'buzz' });
-  t.deepEqual(p.get(obj2), { foo: 'BAR', fizz: 'BUZZ' });
+  t.deepEqual(p.getPrivateInstance(obj1), { foo: 'bar', fizz: 'buzz' });
+  t.deepEqual(p.getPrivateInstance(obj2), { foo: 'BAR', fizz: 'BUZZ' });
 
 });
 
 test('PrivatePart#get'
-  + ' returns a private object whos prototype is either'
-  + ' `this.proto` or (of not set) the passed object.', function (t) {
+  + ' returns a private object whos prototype is either `this.proto`'
+  + ' or (if that\'s not set) the passed object.', function (t) {
 
   t.plan(2);
 
   var privateProto = {};
   var p1 = new PrivatePart(privateProto);
   var obj1 = {};
-  var priv1 = p1.get(obj1);
+  var priv1 = p1.getPrivateInstance(obj1);
 
   t.ok(privateProto.isPrototypeOf(priv1));
 
   var p2 = new PrivatePart();
   var obj2 = {};
-  var priv2 = p2.get(obj2);
+  var priv2 = p2.getPrivateInstance(obj2);
 
   t.ok(obj2.isPrototypeOf(priv2));
 });
@@ -56,11 +71,11 @@ test('PrivatePart#get'
   var p2 = new PrivatePart();
   var obj = {};
 
-  p1.get(obj).name = 'foo';
-  p2.get(obj).name = 'bar';
+  p1.getPrivateInstance(obj).name = 'foo';
+  p2.getPrivateInstance(obj).name = 'bar';
 
-  t.deepEqual(p1.get(obj), { name: 'foo' });
-  t.deepEqual(p2.get(obj), { name: 'bar' });
+  t.deepEqual(p1.getPrivateInstance(obj), { name: 'foo' });
+  t.deepEqual(p2.getPrivateInstance(obj), { name: 'bar' });
 
 });
 
@@ -68,12 +83,11 @@ test('PrivatePart#get'
   + ' will not double wrap a private instance. If given an existing'
   + ' private instance it will simply return it.', function(t) {
 
-  t.plan(2);
+  t.plan(1);
 
   var p = new PrivatePart();
   var obj = {};
-  var privateObj = p.get(obj);
+  var privateObj = p.getPrivateInstance(obj);
 
-  t.equal(p.get(p.get(obj)), privateObj);
-  t.equal(p.get(p.get(p.get(obj))), privateObj);
+  t.equal(p.getPrivateInstance(p.getPrivateInstance(obj)), privateObj);
 });
