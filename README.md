@@ -9,7 +9,7 @@ Private Parts
 4. [Browser and Environment Support](#browser-and-environment-support)
 5. [Building and Testing](#building-and-testing)
 
-The Private Parts module provides a simple and intuitive way to shim private properties and methods in JavaScript. It's small, easy to use, requires minimal setup, and works in both node and the browser.
+The Private Parts module provides a simple and intuitive way to shim private methods and properties in JavaScript. It's small, easy to use, requires minimal setup, and works in both node and the browser.
 
 For more information on how Private Parts works and the problems it solves, see my [article introducing it](#).
 
@@ -98,76 +98,36 @@ The second step is to use the key to get and set properties. Any time you want a
 ```javascript
 var _ = require('private-parts').createKey();
 
-function MyClass() {
+function SomeClass() {
   // `privateProperty` is not accessible outside this module
   _(this).privateProperty = 'bar';
 }
 
-MyClass.prototype.getPrivateProperty = function() {
+SomeClass.prototype.getPrivateProperty = function() {
   return _(this).privateProperty;
 }
 
-MyClass.prototype.setPrivateProperty = function(value) {
+SomeClass.prototype.setPrivateProperty = function(value) {
   return _(this).privateProperty = value;
 }
 ```
 
 Note that you don't need to check if the private instance exists before using it. The key function automatically creates a private instance if one doesn't exsits, and it return the private instance if it does.
 
-### Private Methods
+### Controlling the Prototype Chain
 
-Private methods have always been semi-possible in JavaScript thanks to dynamic `this` and the function methods `call` and `apply`:
-
-```javascript
-// Some function in a closure.
-function privateMethod() {
-  this.doSomething();
-}
-
-// The prototype method can call the private method
-// and retain the `this` context.
-SomeClass.prototype.publicMethod = function() {
-  privateMethod.call(this);
-}
-```
-
-But using `call` or `apply` isn't as convienent as invoking a private method directly on an object, plus it doesn't allow for chaining of multiple methods together.
-
-Private Parts has a solution to this problem.
-
-The `createKey` function accepts an optional parameter that, when passed, is used as the prototype for any private instances created by that key. This object becomes a sort of "private prototype". It's accessible to all of the private intances but not to any of the public ones.
+When you pass a public instance to the key function and get a private instance back, the private instance (by default) will be created with the public instance's prototype as its prototype. This allows you to share prototype methods between both public and private instances.
 
 ```javascript
-var privateMethods = {
-  privateMethodOne: function() { /* ... */ },
-  privateMethodTwo: function() { /* ... */ }
-}
+var _ = require('private-parts').createKey();
 
-var _ = require('private-parts').createKey(privateMethods);
-
-SomeClass.prototype.publicMethod = function() {
-  // Now the private methods can be invoked
-  // directly on the private instances.
-  _(this).privateMethodOne();
-  _(this).privateMethodOne();
-}
+// The prototype chain looks like this:
+_(this)  >>>  SomeClass.prototype
 ```
 
-Most strategies for making private methods in JavaScript involve each new instance getting a copy of each method. This approach is far more efficient because the private methods object is instead set in the prototype chain, so only one copy is ever made, no matter how many new instances are created.
+But this behavior can be changed. The `createKey` function takes an optional argument that, when set, will be used as the prototype for all private instances.
 
-It's worth noting that in some cases, a private method might need to call a public method. In order for that to work, the private methods object needs to have the constructor's prototype in its prototype chain. That will enable the `this` context within private methods to have access to both private and public methods. Here's what that looks like:
-
-```javascript
-var privateMethods = Object.create(SomeClass.prototype);
-privateMethods.privateMethodOne = function() { /* ... */ };
-privateMethods.privateMethodTwo = function() { /* ... */ };
-```
-
-Hopefully this isn't too confusing, but in case it is, the next section will visually show what the prototype chain looks like in each of these three scenarios.
-
-### The Prototype Chain
-
-When you create the key function by passing a private methods object to `createKey(privateMethods)`, each private instance created with that key function will have the private methods object as its prototype.
+This can be very powerful. Being able to set the prototype of the private instances allows you to be able to create a set of shared methods that are accessible to private instances but not public ones. Essentially, you can finally have private prototype methods in JavaScript!
 
 ```javascript
 var privateMethods = { /* ... */ };
@@ -177,26 +137,46 @@ var _ = require('private-parts').createKey(privateMethods);
 _(this)  >>>  privateMethods
 ```
 
-If you do not pass an object to the `createKey()` function, then private instances will set their corresponding public instance as their prototype.
-
-```javascript
-var _ = require('private-parts').createKey();
-
-// Now the prototype chain looks like this:
-_(this)  >>>  this  >>>  SomeClass.prototype
-```
-
-To get the best of both worlds, you can create a private methods object that has the constructor's prototype as its prototype:
+Taking this one step further, if the private methods object is created with the public prototype as it's prototype (using `Object.create`), your private instances will now have access to both public and private methods.
 
 ```javascript
 var privateMethods = Object.create(SomeClass.prototype, { /* ... */ };
 var _ = require('private-parts').createKey(privateMethods);
 
-// Now the prototype chain looks like this:
+// The holy grail prototype chains.
 _(this)  >>>  privateMethods  >>>  SomeClass.prototype
 ```
 
-You may notice that when you use a private methods object, the public instance (i.e. `this`) is not in the prototype chain. This means that if you want to use private methods, you can't also store public properties (own properties) on the public instance and have them be accessible to private instances via the prototype lookup chain. This is usually not a problem though, since most of the time all instance members are private. Getters and setters can always be used when public access is needed.
+The prototype chain for public instances is the same as it always was. As you can see, it doesn't have access to any of the private methods or properties.
+
+```javascript
+// The prototype chain for public instances
+_(this)  >>>  SomeClass.prototype
+```
+
+You might be wondering why the public instance is not in the prototype chain in any of the above examples. While this would be possible, it's generally not a good idea.
+
+If private instances had the public instance in their prototype you could get into weird situations like this:
+
+```javascript
+// Imagine we set a public property on an instance
+this.foo = "bar";
+
+// If the public instance were in the prototype chain of the
+// private instance, reading this property would work.
+_(this).foo // "bar";
+
+// But if we wanted to assign a new value to that property and we do so
+// from the private instance, it won't update the public instance like
+// you might expect. Instead it would create a new "own" property on the
+// private instance shadowing the public one, and probably causing
+// mass confusion.
+_(this).foo = 42;
+_(this).foo // 42
+this.foo //"bar"
+```
+
+In general, the best strategy is to always use private instances and create getters and setters to make properties accessible to outside scopes. This is very common in other languages.
 
 ### A Complete Example
 
@@ -209,7 +189,8 @@ function Car() {
   _(this).mileageAtLastTireRotation = 0;
 }
 
-// Add methods to the public prototype.
+// Public methods.
+
 Car.prototype.drive = function(miles) {
   if (typeof miles == 'number' && miles > 0) {
     _(this).mileage += miles;
@@ -246,10 +227,10 @@ Car.prototype.rotateTires = function() {
   }
 }
 
-// Create the "private prototype".
+// Private methods.
+
 var privateMethods = Object.create(Car.prototype);
 
-// Add methods to the "private prototype".
 privateMethods.shouldChangeOil = function() {
   return this.getMilesSinceLastOilChange() > 5000 ? true : false
 };
@@ -258,7 +239,7 @@ privateMethods.shouldRotateTires = function() {
   return this.getMilesSinceLastTireRotation() > 5000 ? true : false
 };
 
-// Create the key function with setting the private methods.
+// Create the key function setting the private methods.
 var _ = require('private-parts').createKey(privateMethods);
 
 module.exports = Car;
