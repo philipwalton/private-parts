@@ -43,22 +43,23 @@ test('PrivatePart#get'
 
 test('PrivatePart#get'
   + ' returns a private object whos prototype is either `this.proto`'
-  + ' or (if that\'s not set) the passed object.', function (t) {
+  + ' or (if that\'s not set) the passed object\'s prototype.', function (t) {
 
   t.plan(2);
 
   var privateProto = {};
   var p1 = new PrivatePart(privateProto);
-  var obj1 = {};
-  var priv1 = p1.getPrivateInstance(obj1);
+  var publicInstance1 = {};
+  var privateInstance1 = p1.getPrivateInstance(publicInstance1);
 
-  t.ok(privateProto.isPrototypeOf(priv1));
+  t.equal(Object.getPrototypeOf(privateInstance1), privateProto);
 
+  var publicProto = {};
   var p2 = new PrivatePart();
-  var obj2 = {};
-  var priv2 = p2.getPrivateInstance(obj2);
+  var publicInstance2 = Object.create(publicProto);
+  var privateInstance2 = p2.getPrivateInstance(publicInstance2);
 
-  t.ok(obj2.isPrototypeOf(priv2));
+  t.equal(Object.getPrototypeOf(privateInstance2), publicProto);
 });
 
 test('PrivatePart#get'
@@ -69,13 +70,13 @@ test('PrivatePart#get'
 
   var p1 = new PrivatePart();
   var p2 = new PrivatePart();
-  var obj = {};
+  var publicInstance = {};
 
-  p1.getPrivateInstance(obj).name = 'foo';
-  p2.getPrivateInstance(obj).name = 'bar';
+  p1.getPrivateInstance(publicInstance).name = 'foo';
+  p2.getPrivateInstance(publicInstance).name = 'bar';
 
-  t.deepEqual(p1.getPrivateInstance(obj), { name: 'foo' });
-  t.deepEqual(p2.getPrivateInstance(obj), { name: 'bar' });
+  t.deepEqual(p1.getPrivateInstance(publicInstance), { name: 'foo' });
+  t.deepEqual(p2.getPrivateInstance(publicInstance), { name: 'bar' });
 
 });
 
@@ -86,8 +87,11 @@ test('PrivatePart#get'
   t.plan(1);
 
   var p = new PrivatePart();
-  var obj = {};
-  var privateObj = p.getPrivateInstance(obj);
+  var publicInstance = {};
+  var privateObj = p.getPrivateInstance(publicInstance);
 
-  t.equal(p.getPrivateInstance(p.getPrivateInstance(obj)), privateObj);
+  t.equal(
+    p.getPrivateInstance(p.getPrivateInstance(publicInstance)),
+    privateObj
+  );
 });
