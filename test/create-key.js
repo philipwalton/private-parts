@@ -1,8 +1,7 @@
 var test = require('tape');
 var createKey = require('..').createKey;
 
-test('createKey'
-  + ' encloses an instance of PrivateParts#get', function(t) {
+test('It encloses an instance of PrivateParts#get', function(t) {
 
   t.plan(1);
 
@@ -15,8 +14,7 @@ test('createKey'
   t.notEqual(_1(obj), _2(obj));
 });
 
-test('createKey'
-  + ' does not leak private variables outside of a scope', function(t) {
+test('It does not leak private variables outside of a scope', function(t) {
 
   t.plan(3);
 
