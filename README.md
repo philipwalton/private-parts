@@ -116,18 +116,27 @@ Note that you don't need to check if the private instance exists before using it
 
 ### Controlling the Prototype Chain
 
-When you pass a public instance to the key function and get a private instance back, the private instance (by default) will be created with the public instance's prototype as its prototype. This allows you to share prototype methods between both public and private instances.
+When you pass a public instance to the key function and get a private instance back, the private instance (by default) will be a plain object with null as its prototype.
 
 ```javascript
 var _ = require('private-parts').createKey();
 
 // The prototype chain looks like this:
+_(this)  >>>  null
+```
+
+This is okay for some situations, but if your private instances needs to access any prototype methods, this won't work.
+
+Luckily, this behavior can be changed. The `createKey` function takes an optional argument that, when set, will be used as the prototype for all private instances. If you want your private instances to have access to the public prototype, simply pass it to `createKey`.
+
+```javascript
+var _ = require('private-parts').createKey(SomeClass.prototype);
+
+// The prototype chain looks like this:
 _(this)  >>>  SomeClass.prototype
 ```
 
-But this behavior can be changed. The `createKey` function takes an optional argument that, when set, will be used as the prototype for all private instances.
-
-This can be very powerful. Being able to set the prototype of the private instances allows you to be able to create a set of shared methods that are accessible to private instances but not public ones. Essentially, you can finally have private prototype methods in JavaScript!
+There's actually a lot more power here than may be initially apparent. Being able to set the prototype of the private instances gives you the ability to create a set of shared methods that are accessible to private instances but not public ones. Essentially, you can create a private prototype!
 
 ```javascript
 var privateMethods = { /* ... */ };
@@ -137,13 +146,13 @@ var _ = require('private-parts').createKey(privateMethods);
 _(this)  >>>  privateMethods
 ```
 
-Taking this one step further, if the private methods object is created with the public prototype as it's prototype (using `Object.create`), your private instances will now have access to both public and private methods.
+Taking this one step further, if the private methods object is created with the public prototype as its prototype (using `Object.create`), your private instances will now have access to both public and private methods.
 
 ```javascript
 var privateMethods = Object.create(SomeClass.prototype, { /* ... */ };
 var _ = require('private-parts').createKey(privateMethods);
 
-// The holy grail prototype chains.
+// The holy grail of prototype chains.
 _(this)  >>>  privateMethods  >>>  SomeClass.prototype
 ```
 
@@ -154,9 +163,18 @@ The prototype chain for public instances is the same as it always was. As you ca
 _(this)  >>>  SomeClass.prototype
 ```
 
-You might be wondering why the public instance is not in the prototype chain in any of the above examples. While this would be possible, it's generally not a good idea.
+If you want to get really fancy, `createKey` also accepts a function that will be called with the public instance as it's first argument. This would allow you to (if you wanted) add the public instance itself to the prototype chain.
 
-If private instances had the public instance in their prototype you could get into weird situations like this:
+```javascript
+var _ = require('private-parts').createKey(function(publicInstance) {
+  return Object.create(publicInstance);
+});
+
+// The prototype chain looks like this:
+_(this)  >>>  this  >>>  SomeClass.prototype
+```
+
+I actually don't recommend the above pattern, as it's generally not a good idea. If private instances had the public instance in their prototype you could get into weird situations like this:
 
 ```javascript
 // Imagine we set a public property on an instance
