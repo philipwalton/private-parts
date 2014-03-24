@@ -156,14 +156,7 @@ var _ = require('private-parts').createKey(privateMethods);
 _(this)  >>>  privateMethods  >>>  SomeClass.prototype
 ```
 
-The prototype chain for public instances is the same as it always was. As you can see, it doesn't have access to any of the private methods or properties.
-
-```javascript
-// The prototype chain for public instances
-_(this)  >>>  SomeClass.prototype
-```
-
-If you want to get really fancy, `createKey` also accepts a function that will be called with the public instance as it's first argument. This would allow you to (if you wanted) add the public instance itself to the prototype chain.
+Lastly, if you want to get really fancy, `createKey` also accepts a function that will be called with the public instance as it's first argument, and the returned object will be used as the private instance. This would allow you to do more custom things like add the public instance itself to the prototype chain.
 
 ```javascript
 var _ = require('private-parts').createKey(function(publicInstance) {
@@ -174,15 +167,15 @@ var _ = require('private-parts').createKey(function(publicInstance) {
 _(this)  >>>  this  >>>  SomeClass.prototype
 ```
 
-I actually don't recommend the above pattern, as it's generally not a good idea. If private instances had the public instance in their prototype you could get into weird situations like this:
+Note that the above example is primarily used to show the power of passing a function to `createKey`; however, I would strongly recommend against setting the public instance in the private instance's prototype chain unless you really need to. Otherwise you might find yourself in a situation like the following:
 
 ```javascript
 // Imagine we set a public property on an instance
-this.foo = "bar";
+this.foo = 'bar';
 
 // If the public instance were in the prototype chain of the
 // private instance, reading this property would work.
-_(this).foo // "bar";
+_(this).foo // 'bar';
 
 // But if we wanted to assign a new value to that property and we do so
 // from the private instance, it won't update the public instance like
@@ -191,7 +184,7 @@ _(this).foo // "bar";
 // mass confusion.
 _(this).foo = 42;
 _(this).foo // 42
-this.foo //"bar"
+this.foo // 'bar'
 ```
 
 In general, the best strategy is to always use private instances and create getters and setters to make properties accessible to outside scopes. This is very common in other languages.
@@ -233,7 +226,7 @@ Car.prototype.changeOil = function() {
   if ( _(this).shouldChangeOil() ) {
     _(this).mileageAtLastOilChange = _(this).mileage;
   } else {
-    return("No oil change is needed at this time.")
+    return('No oil change is needed at this time.')
   }
 }
 
@@ -241,7 +234,7 @@ Car.prototype.rotateTires = function() {
   if ( _(this).shouldRotateTires() ) {
     _(this).mileageAtLastTireRotation = _(this).mileage;
   } else {
-    return("No tire rotation is needed at this time.")
+    return('No tire rotation is needed at this time.')
   }
 }
 
