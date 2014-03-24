@@ -15,22 +15,24 @@ test('It returns undefined if given a non-object.', function(t) {
   t.notOk(_());
 });
 
-test('It always returns the same object given the same key.', function(t) {
+test('It always returns the same private object'
+  + ' given the same public object.', function(t) {
+
   t.plan(1);
 
   var _ = createStore();
-  var key = {};
+  var pub = {};
 
-  t.equal(_(key), _(key));
+  t.equal(_(pub), _(pub));
 });
 
 test('It will not double privatize an object.', function(t) {
   t.plan(1);
 
   var _ = createStore();
-  var key = {};
+  var pub = {};
 
-  t.equal(_(_(key)), _(key));
+  t.equal(_(_(pub)), _(pub));
 });
 
 test('If a factory method is passed,'
@@ -38,14 +40,14 @@ test('If a factory method is passed,'
 
   t.plan(1);
 
-  var factory = function(key) {
-    return { key: key };
+  var factory = function(obj) {
+    return { contains: obj };
   };
 
-  var key = {};
+  var pub = {};
   var _ = createStore(factory);
 
-  t.deepEqual(_(key), { key: key });
+  t.deepEqual(_(pub), { contains: pub });
 });
 
 test('If factory is an object, it will create new objects'
@@ -70,14 +72,45 @@ test('If no factory method is passed, it will default '
   t.equal(Object.getPrototypeOf(_({})), null);
 });
 
-test('Given the same key, two different stores'
-  + ' will return two different objects.', function(t) {
+test('Given the same public object, two different stores'
+  + ' will return two different private objects.', function(t) {
 
   t.plan(1);
 
   var _1 = createStore();
   var _2 = createStore();
-  var key = {};
+  var pub = {};
 
-  t.notEqual(_1(key), _2(key));
+  t.notEqual(_1(pub), _2(pub));
+});
+
+test('It does not leak values outside of a scope', function(t) {
+
+  t.plan(3);
+
+  var pub = {};
+
+  (function() {
+    // inner scope 1
+    var _ = createStore();
+
+    _(pub).foo = 'foo';
+    _(pub).bar = 'bar';
+
+    t.deepEqual(_(pub), { foo: 'foo', bar: 'bar' });
+  }());
+
+  (function() {
+    // inner scope 2
+    var _ = createStore();
+
+    _(pub).fizz = 'fizz';
+    _(pub).buzz = 'buzz';
+
+    t.deepEqual(_(pub), { fizz: 'fizz', buzz: 'buzz' });
+  }());
+
+  // outer scope
+  var _ = createStore();
+  t.deepEqual(_(pub), {});
 });
