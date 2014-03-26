@@ -1,14 +1,13 @@
 MODS := ./node_modules
 BINS := ./node_modules/.bin
 
-
 all: install test test-browser build
 
 install:
 	@ npm install
 
-jshint:
-	@ $(BINS)/jshint index.js lib/*.js test/*.js
+jshint: index.js lib/*.js test/*.js
+	@ $(BINS)/jshint $^
 
 test: test-node test-browser
 
