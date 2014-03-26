@@ -353,7 +353,12 @@ if (!('WeakMap' in global)) global.WeakMap = require('weapmap');
 In the browser:
 
 ```xml
+<!-- needed for most browsers -->
 <script src="path/to/weakmap.js"></script>
+
+<!-- if you need to support really old browsers -->
+<script src="path/to/es5-shim.js"></script>
+
 <script src="path/to/private-parts.js"></script>
 ```
 
