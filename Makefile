@@ -1,33 +1,37 @@
-MODS := ./node_modules
-BINS := ./node_modules/.bin
+mods := ./node_modules
+bins := ./node_modules/.bin
+src := index.js lib/*.js
+test := test/*.js test/fixtures/*.js
 
-all: install test test-browser build
+all: install test build
 
 install:
 	@ npm install
 
-jshint: index.js lib/*.js test/*.js
-	@ $(BINS)/jshint $^
-
-test: test-node test-browser
+lint: $(src) $(test)
+	@ $(bins)/jshint --verbose $^
 
 # Start node with the harmony flag turned on to run the tests in a native
 # WeakMap environment.
-test-node: jshint
-	@ node --harmony $(BINS)/tape test/*.js
+test-node: lint
+	@ node --harmony $(bins)/tape test/*.js
 
 # Run the tests in a headless browser using testling and a WeakMap shim.
-test-browser: jshint
-	@ (cat $(MODS)/es5-shim/es5-shim.js \
-			; cat $(MODS)/weakmap/weakmap.js \
-			; $(BINS)/browserify test/*.js) \
-		| $(BINS)/testling
+test-browser: lint
+	@ (cat $(mods)/es5-shim/es5-shim.js \
+			; cat $(mods)/weakmap/weakmap.js \
+			; $(bins)/browserify test/*.js) \
+		| $(bins)/testling
 
-build: jshint
-	@ cp $(MODS)/es5-shim/es5-shim.js test/browser/es5-shim.js
-	@ cp $(MODS)/weakmap/weakmap.js test/browser/weakmap.js
-	@ $(BINS)/browserify -s PrivateParts index.js \
-		| $(BINS)/uglifyjs \
+test: test-node test-browser
+
+private-parts.js: $(src)
+	@ $(bins)/browserify -s PrivateParts index.js \
+		| $(bins)/uglifyjs \
 		> private-parts.js
+
+build: lint private-parts.js
+	@ cp $(mods)/es5-shim/es5-shim.js test/browser/es5-shim.js
+	@ cp $(mods)/weakmap/weakmap.js test/browser/weakmap.js
 
 .PHONY: all install test test-node test-browser build
