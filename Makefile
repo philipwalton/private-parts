@@ -1,6 +1,6 @@
 mods := ./node_modules
 bins := ./node_modules/.bin
-src := index.js lib/*.js
+src := index.js
 test := test/*.js test/fixtures/*.js
 
 all: install test build

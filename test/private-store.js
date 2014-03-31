@@ -1,5 +1,5 @@
 var test = require('tape');
-var createStore = require('../lib/private-store');
+var createStore = require('..');
 
 test('It accepts an object and returns an object.', function(t) {
   t.plan(1);
