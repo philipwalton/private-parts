@@ -1,17 +1,17 @@
 var test = require('tape');
-var createStore = require('..');
+var createKey = require('..').createKey;
 
 test('It accepts an object and returns an object.', function(t) {
   t.plan(1);
 
-  var _ = createStore();
+  var _ = createKey();
   t.ok(_({}));
 });
 
 test('It returns undefined if given a non-object.', function(t) {
   t.plan(1);
 
-  var _ = createStore();
+  var _ = createKey();
   t.notOk(_());
 });
 
@@ -20,7 +20,7 @@ test('It always returns the same private object'
 
   t.plan(1);
 
-  var _ = createStore();
+  var _ = createKey();
   var pub = {};
 
   t.equal(_(pub), _(pub));
@@ -29,7 +29,7 @@ test('It always returns the same private object'
 test('It will not double privatize an object.', function(t) {
   t.plan(1);
 
-  var _ = createStore();
+  var _ = createKey();
   var pub = {};
 
   t.equal(_(_(pub)), _(pub));
@@ -45,7 +45,7 @@ test('If a factory method is passed,'
   };
 
   var pub = {};
-  var _ = createStore(factory);
+  var _ = createKey(factory);
 
   t.deepEqual(_(pub), { contains: pub });
 });
@@ -56,7 +56,7 @@ test('If factory is an object, it will create new objects'
   t.plan(1);
 
   var obj = {};
-  var _ = createStore(obj);
+  var _ = createKey(obj);
 
   t.equal(Object.getPrototypeOf(_({})), obj);
 });
@@ -67,7 +67,7 @@ test('If no factory method is passed, it will default '
 
   t.plan(1);
 
-  var _ = createStore();
+  var _ = createKey();
 
   t.equal(Object.getPrototypeOf(_({})), null);
 });
@@ -77,8 +77,8 @@ test('Given the same public object, two different stores'
 
   t.plan(1);
 
-  var _1 = createStore();
-  var _2 = createStore();
+  var _1 = createKey();
+  var _2 = createKey();
   var pub = {};
 
   t.notEqual(_1(pub), _2(pub));
@@ -92,7 +92,7 @@ test('It does not leak values outside of a scope', function(t) {
 
   (function() {
     // inner scope 1
-    var _ = createStore();
+    var _ = createKey();
 
     _(pub).foo = 'foo';
     _(pub).bar = 'bar';
@@ -102,7 +102,7 @@ test('It does not leak values outside of a scope', function(t) {
 
   (function() {
     // inner scope 2
-    var _ = createStore();
+    var _ = createKey();
 
     _(pub).fizz = 'fizz';
     _(pub).buzz = 'buzz';
@@ -111,6 +111,6 @@ test('It does not leak values outside of a scope', function(t) {
   }());
 
   // outer scope
-  var _ = createStore();
+  var _ = createKey();
   t.deepEqual(_(pub), {});
 });

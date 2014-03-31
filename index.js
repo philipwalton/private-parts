@@ -8,7 +8,7 @@
  *   If factory is an object, the private instance will be a new object with
  *   factory as it's prototype.
  */
-function createStore(factory){
+function createKey(factory){
 
   // Create the factory based on the type of object passed.
   factory = typeof factory == 'function'
@@ -45,6 +45,6 @@ function createStore(factory){
   };
 }
 
-// Expose createStore both as the module and on the `createKey` property.
-module.exports = createStore;
-module.exports.createKey = createStore;
+module.exports = {
+  createKey: createKey
+};
