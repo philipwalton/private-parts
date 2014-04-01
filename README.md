@@ -173,33 +173,33 @@ The method in which new private instances are created is determined by the argum
 
 #### `createKey(fn)`
 
-The `createKey` factory method returns a new instance of a key function. When you invoke the key function (as described above) with a public instance that it has never seen before, it creates a new private instance to associate with the public instance and returns that.
+When `createKey` is passed a function, that function is used to create new private instances (when the key function receives a public instance it's never seen before). The passed function (the creator function) is invoked with the public instance as its first argument.
 
-How that private instance is created can be controlled by you by passing a function to `createKey`. That function is used to create new private instances. The function is invoked with the public instance as its first argument. For example:
+For example, if you wanted all private instances to have a reference back to the public instance, you could do the following:
 
 ```javascript
 var _ = createKey(function(publicInstance) {
-  return { public: publicInstance };
+  return { __public__: publicInstance };
 })
 
-_({}) // returns {public: {}}
+_({foo:'bar'}) // returns { __public__: {foo:'bar'}}
 ```
 
 #### `createKey(obj)`
 
-When passing an object instead of a function, a function is created behind the scenes that uses that object to create new objects with that object as its prototype. The following illustrates this:
+When `createKey` receives an object instead of a function, it actually creates a function behind the scenes by binding the passed object to `Object.create`. This effectively means that newly created instances will have the object passed to `createKey` as their prototype:
 
 ```javascript
-var myObj = {};
+var someObj = { /* ... */ };
 
-// Given `myObj`, the following two expressions are equivalent.
-createKey(myObj);
-createKey(Object.create.bind(null, myObj, {}));
+// Given `someObj`, the following two expressions are equivalent.
+createKey(someObj);
+createKey(Object.create.bind(null, someObj, {}));
 ```
 
 #### `createKey()`
 
-If nothing is passed to `createKey`, plain old JavaScript objects are created. The following illustrates this:
+If nothing is passed to `createKey`, a plain old JavaScript object is created.
 
 ```javascript
 // The following three expressions are equivalent.
