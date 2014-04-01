@@ -13,7 +13,7 @@ function createKey(factory){
   // Create the factory based on the type of object passed.
   factory = typeof factory == 'function'
     ? factory
-    : Object.create.bind(null, factory || null, {});
+    : Object.create.bind(null, factory || Object.prototype, {});
 
   // Store is used to map public objects to private objects.
   var store = new WeakMap();

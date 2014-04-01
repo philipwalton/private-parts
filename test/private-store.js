@@ -63,13 +63,14 @@ test('If factory is an object, it will create new objects'
 
 
 test('If no factory method is passed, it will default '
-  + ' to creating an object with a null prototype.', function(t) {
+  + ' to creating a plain old JavaScript object.', function(t) {
 
-  t.plan(1);
+  t.plan(2);
 
   var _ = createKey();
 
-  t.equal(Object.getPrototypeOf(_({})), null);
+  t.deepEqual(_({}), {});
+  t.equal(Object.getPrototypeOf(_({})), Object.prototype);
 });
 
 test('Given the same public object, two different stores'

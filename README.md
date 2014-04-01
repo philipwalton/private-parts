@@ -69,7 +69,7 @@ Car.prototype.readMileage() {
 }
 ```
 
-The first example used `this._mileage` to reference the "private" mileage property of each instance. In the second example, all occurances of `this._mileage` have been replaced with `_(this).mileage`. As a result, `mileage` is never actually a property of `this`, so it can't be tampered with.
+The first example used `this._mileage` to reference the "private" mileage property of each instance. In the second example, all occurrences of `this._mileage` have been replaced with `_(this).mileage`. As a result, `mileage` is never actually a property of `this`, so it can't be tampered with.
 
 ```javascript
 var honda = new Car();
@@ -80,7 +80,7 @@ console.log(honda.mileage); // undefined
 
 If you look at the Private Parts example in the code above, you'll notice that the `this` context is wrapped in the `_()` function whenever it needs to access private data.
 
-I call this function the "key function" or often just the "key".
+I call `_()` the "key function" or often just the "key".
 
 ### The Key Function
 
@@ -94,7 +94,7 @@ The key (like any variable in JavaScript) is only accessible to the scope it's d
 
 The first step is to create the key. Make sure to pay attention to the scope you're in. If you're in the browser, make sure you don't accidentally expose the key to the global scope.
 
-The second step is to use the key to get and set properties. Any time you want a property to be private, use the key to set that property on the private instance. Since it's actually private, you'll need to create getters and setters to access it.
+The second step is to use the key to get and set properties. Any time you want a property to be private, use the key to set that property on the private instance. Since it's actually private, you'll need to create getters and setters to access it from any public scope.
 
 ```javascript
 var _ = require('private-parts').createKey();
@@ -113,22 +113,24 @@ SomeClass.prototype.setPrivateProperty = function(value) {
 }
 ```
 
-Note that you don't need to check if the private instance exists before using it. The key function automatically creates a private instance if one doesn't exsits, and it returns the private instance if it does.
+Note that you don't need to check if the private instance exists before using it. The key function automatically creates a private instance if one doesn't exist, and it returns the private instance if it does.
 
 ### Controlling the Prototype Chain
 
-When you pass a public instance to the key function and get a private instance back, the private instance (by default) will be a plain object with null as its prototype.
+When you pass a public instance to the key function and get a private instance back, the private instance (by default) will be a plain old JavaScript object.
 
 ```javascript
 var _ = require('private-parts').createKey();
 
 // The prototype chain looks like this:
-_(this)  >>>  null
+_(this)  >>>  Object.prototype
 ```
 
 This is okay for some situations, but if your private instance needs to access any prototype methods, this won't work.
 
-Luckily, this behavior can be changed. The `createKey` function takes an optional argument that, when set, will be used as the prototype for all private instances. If you want your private instances to have access to the public prototype, simply pass it to `createKey`.
+Luckily, this behavior can be changed. The `createKey` function takes an optional argument that can be used to control how private instances are created. If the optional argument is an object, new private instances will be created with that object as their prototype. (Note, the optional argument can also be a function, for more information on passing a function to `createKey`, see the [API](#api) section.)
+
+To give your private instances access to the public prototype, simply pass the prototype to `createKey`.
 
 ```javascript
 var _ = require('private-parts').createKey(SomeClass.prototype);
@@ -143,7 +145,7 @@ There's actually a lot more power here than may be initially apparent. Being abl
 var privateMethods = { /* ... */ };
 var _ = require('private-parts').createKey(privateMethods);
 
-// Now the prototype chain looks like this:
+// Now the prototype chain now looks like this:
 _(this)  >>>  privateMethods
 ```
 
@@ -153,42 +155,9 @@ Taking this one step further, if the private methods object is created with the 
 var privateMethods = Object.create(SomeClass.prototype, { /* ... */ };
 var _ = require('private-parts').createKey(privateMethods);
 
-// The holy grail of prototype chains.
+// The ultimate prototype chain.
 _(this)  >>>  privateMethods  >>>  SomeClass.prototype
 ```
-
-Lastly, if you want to get really fancy, `createKey` also accepts a function that will be called with the public instance as it's first argument, and the returned object will be used as the private instance. This would allow you to do more custom things like add the public instance itself to the prototype chain.
-
-```javascript
-var _ = require('private-parts').createKey(function(publicInstance) {
-  return Object.create(publicInstance);
-});
-
-// The prototype chain looks like this:
-_(this)  >>>  this  >>>  SomeClass.prototype
-```
-
-Note that the above example is primarily used to show the power of passing a function to `createKey`; however, I would strongly recommend against setting the public instance in the private instance's prototype chain unless you really need to. Otherwise you might find yourself in a situation like the following:
-
-```javascript
-// Imagine we set a public property on an instance
-this.foo = 'bar';
-
-// If the public instance were in the prototype chain of the
-// private instance, reading this property would work.
-_(this).foo // 'bar';
-
-// But if we wanted to assign a new value to that property and we do so
-// from the private instance, it won't update the public instance like
-// you might expect. Instead it would create a new "own" property on the
-// private instance shadowing the public one, and probably causing
-// mass confusion.
-_(this).foo = 42;
-_(this).foo // 42
-this.foo // 'bar'
-```
-
-In general, the best strategy is to always use private instances and create getters and setters to make properties accessible to outside scopes. This is very common in other languages.
 
 ### A Complete Example
 
@@ -198,15 +167,15 @@ For a complete example that showcases both private properties and methods, check
 
 #### `_(obj)`
 
-The key function, usually stored on the `_` (underscore) variable, acts as an accessor to the private store. It accepts an object (the "public instance") and returns the object associated with that passed object (the "private instance"). If no private instance couterpart exists, a new one is created.
+The key function, usually stored on the `_` (underscore) variable, acts as an accessor to the private store. It accepts an object (the "public instance") and returns the object associated with that passed object (the "private instance"). If no private instance counterpart exists, a new one is created.
 
-The method in which new private instances are created is determined by the argument passed to the `createKey` factory method, as describe next:
+The method in which new private instances are created is determined by the argument passed to the `createKey` factory method, as described next:
 
 #### `createKey(fn)`
 
-The `createKey` factory method returns a new instance of a key function. When you invoke the key function (as described above) with an object that it has never seen before, it creates a new object and returns that.
+The `createKey` factory method returns a new instance of a key function. When you invoke the key function (as described above) with a public instance that it has never seen before, it creates a new private instance to associate with the public instance and returns that.
 
-If the argument passed to `createKey` is a function, that function is used to create new private instances. The function is invoked with the public instance as it's first argument. For example:
+How that private instance is created can be controlled by you by passing a function to `createKey`. That function is used to create new private instances. The function is invoked with the public instance as its first argument. For example:
 
 ```javascript
 var _ = createKey(function(publicInstance) {
@@ -230,15 +199,14 @@ createKey(Object.create.bind(null, myObj, {}));
 
 #### `createKey()`
 
-If nothing is passed to `createKey`, blank new objects are created with no prototype. The following illustrates this:
+If nothing is passed to `createKey`, plain old JavaScript objects are created. The following illustrates this:
 
 ```javascript
 // The following three expressions are equivalent.
 createKey();
-createKey(null);
-createKey(Object.create.bind(null, null, {}));
+createKey(Object.prototype);
+createKey(Object.create.bind(null, Object.prototype, {}));
 ```
-
 
 ## Installation
 
