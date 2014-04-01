@@ -13,7 +13,7 @@ function createKey(factory){
   // Create the factory based on the type of object passed.
   factory = typeof factory == 'function'
     ? factory
-    : Object.create.bind(null, factory || Object.prototype, {});
+    : createBound(factory);
 
   // Store is used to map public objects to private objects.
   var store = new WeakMap();
@@ -42,6 +42,19 @@ function createKey(factory){
       }
     }
     return value;
+  };
+}
+
+/**
+ * Function.prototype.bind doesn't work in PhantomJS or Safari 5.1,
+ * so we have to manually bind until support is dropped.
+ * This function is effectively `Object.create.bind(null, obj, {})`
+ * @param {Object} obj The first bound parameter to `Object.create`
+ * @return {Function} The bound function.
+ */
+function createBound(obj) {
+  return function() {
+    return Object.create(obj || Object.prototype);
   };
 }
 

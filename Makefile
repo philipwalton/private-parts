@@ -18,9 +18,7 @@ test-node: lint
 
 # Run the tests in a headless browser using testling and a WeakMap shim.
 test-browser: lint
-	@ (cat $(mods)/es5-shim/es5-shim.js \
-			; cat $(mods)/weakmap/weakmap.js \
-			; $(bins)/browserify test/*.js) \
+	@ (cat $(mods)/weakmap/weakmap.js ; $(bins)/browserify test/*.js) \
 		| $(bins)/testling
 
 test: test-node test-browser
@@ -31,7 +29,6 @@ private-parts.js: $(src)
 		> private-parts.js
 
 build: lint private-parts.js
-	@ cp $(mods)/es5-shim/es5-shim.js test/browser/es5-shim.js
 	@ cp $(mods)/weakmap/weakmap.js test/browser/weakmap.js
 
 .PHONY: all install test test-node test-browser build

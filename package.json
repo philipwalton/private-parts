@@ -32,8 +32,7 @@
     "testling": "^1.6.0",
     "jshint": "^2.4.4",
     "uglify-js": "^2.4.12",
-    "weakmap": "^0.0.6",
-    "es5-shim": "~2.3.0"
+    "weakmap": "^0.0.6"
   },
   "testling": {
     "scripts": "test/browser/weakmap.js",
