@@ -31,4 +31,4 @@ private-parts.js: $(src)
 build: lint private-parts.js
 	@ cp $(mods)/weakmap/weakmap.js test/browser/weakmap.js
 
-.PHONY: all install test test-node test-browser build
+.PHONY: all install lint test test-node test-browser build
