@@ -8,7 +8,7 @@ var colors = require('colors');
 var moment = require('moment');
 var version = determineVersion();
 
-// Make sure the tests pass and everything build before updating any files.
+// Make sure the tests pass and everything builds before updating any files.
 run(['make']);
 
 updateChangelog();
