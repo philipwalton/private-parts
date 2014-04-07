@@ -18,8 +18,9 @@ test-node: lint
 
 # Run the tests in a headless browser using testling and a WeakMap shim.
 test-browser: lint
-	@ (cat $(mods)/weakmap/weakmap.js ; $(bins)/browserify test/*.js) \
-		| $(bins)/testling
+	@ cp $(mods)/weakmap/weakmap.js test/browser/weakmap.js
+	@ $(bins)/browserify test/*.js > test/browser/bundle.js
+	@ $(bins)/testling
 
 test: test-node test-browser
 
