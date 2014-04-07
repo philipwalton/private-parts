@@ -1,28 +1,69 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var PrivatePart = require('./lib/private-part');
+/**
+ * A function that returns a function that allows you to associate
+ * a public object with its private counterpart.
+ * @param {Function|Object} factory An optional argument that, is present, will
+ *   be used to create new objects in the store.
+ *   If factory is a function, it will be invoked with the key as an argument
+ *   and the return value will be the private instance.
+ *   If factory is an object, the private instance will be a new object with
+ *   factory as it's prototype.
+ */
+function createKey(factory){
 
-module.exports = {
-  createKey: function() {
-    var privates = new PrivatePart();
-    return function createKey(instance) {
-      return privates.get(instance);
-    };
-  }
-};
+  // Create the factory based on the type of object passed.
+  factory = typeof factory == 'function'
+    ? factory
+    : createBound(factory);
 
-},{"./lib/private-part":2}],2:[function(require,module,exports){
-function PrivatePart() {
-  this.weakmap = new WeakMap();
+  // Store is used to map public objects to private objects.
+  var store = new WeakMap();
+
+  // Seen is used to track existing private objects.
+  var seen = new WeakMap();
+
+  /**
+   * An accessor function to get private instances from the store.
+   * @param {Object} key The public object that is associated with a private
+   *   object in the store.
+   */
+  return function(key) {
+    if (typeof key != 'object') return;
+
+    var value = store.get(key);
+    if (!value) {
+      // Make sure key isn't already the private instance of some existing key.
+      // This check helps prevent accidental double privatizing.
+      if (seen.has(key)) {
+        value = key;
+      } else {
+        value = factory(key);
+        store.set(key, value);
+        seen.set(value, true);
+      }
+    }
+    return value;
+  };
 }
 
-PrivatePart.prototype.get = function(obj) {
-  if (!this.weakmap.has(obj)) this.weakmap.set(obj, Object.create(obj));
-  return this.weakmap.get(obj);
+/**
+ * Function.prototype.bind doesn't work in PhantomJS or Safari 5.1,
+ * so we have to manually bind until support is dropped.
+ * This function is effectively `Object.create.bind(null, obj, {})`
+ * @param {Object} obj The first bound parameter to `Object.create`
+ * @return {Function} The bound function.
+ */
+function createBound(obj) {
+  return function() {
+    return Object.create(obj || Object.prototype);
+  };
+}
+
+module.exports = {
+  createKey: createKey
 };
 
-module.exports = PrivatePart;
-
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 /**
  * The buffer module from node.js, for the browser.
  *
@@ -1134,7 +1175,7 @@ function assert (test, message) {
   if (!test) throw new Error(message || 'Failed assertion')
 }
 
-},{"base64-js":4,"ieee754":5}],4:[function(require,module,exports){
+},{"base64-js":3,"ieee754":4}],3:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -1257,7 +1298,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	module.exports.fromByteArray = uint8ToBase64
 }())
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
@@ -1343,7 +1384,7 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128;
 };
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1645,7 +1686,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -1670,7 +1711,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -1715,6 +1756,13 @@ process.browser = true;
 process.env = {};
 process.argv = [];
 
+function noop() {}
+
+process.on = noop;
+process.once = noop;
+process.off = noop;
+process.emit = noop;
+
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
 }
@@ -1725,7 +1773,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -1952,8 +2000,8 @@ var substr = 'ab'.substr(-1) === 'b'
     }
 ;
 
-}).call(this,require("/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":8}],10:[function(require,module,exports){
+}).call(this,require("/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+},{"/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":7}],9:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2027,7 +2075,7 @@ function onend() {
   });
 }
 
-},{"./readable.js":14,"./writable.js":16,"inherits":7,"process/browser.js":12}],11:[function(require,module,exports){
+},{"./readable.js":13,"./writable.js":15,"inherits":6,"process/browser.js":11}],10:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2156,9 +2204,62 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"./duplex.js":10,"./passthrough.js":13,"./readable.js":14,"./transform.js":15,"./writable.js":16,"events":6,"inherits":7}],12:[function(require,module,exports){
-module.exports=require(8)
-},{}],13:[function(require,module,exports){
+},{"./duplex.js":9,"./passthrough.js":12,"./readable.js":13,"./transform.js":14,"./writable.js":15,"events":5,"inherits":6}],11:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
+    }
+
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+}
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+
+},{}],12:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2201,7 +2302,7 @@ PassThrough.prototype._transform = function(chunk, encoding, cb) {
   cb(null, chunk);
 };
 
-},{"./transform.js":15,"inherits":7}],14:[function(require,module,exports){
+},{"./transform.js":14,"inherits":6}],13:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -3137,8 +3238,8 @@ function indexOf (xs, x) {
   return -1;
 }
 
-}).call(this,require("/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"./index.js":11,"/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":8,"buffer":3,"events":6,"inherits":7,"process/browser.js":12,"string_decoder":17}],15:[function(require,module,exports){
+}).call(this,require("/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+},{"./index.js":10,"/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":7,"buffer":2,"events":5,"inherits":6,"process/browser.js":11,"string_decoder":16}],14:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -3344,7 +3445,7 @@ function done(stream, er) {
   return stream.push(null);
 }
 
-},{"./duplex.js":10,"inherits":7}],16:[function(require,module,exports){
+},{"./duplex.js":9,"inherits":6}],15:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -3732,7 +3833,7 @@ function endWritable(stream, state, cb) {
   state.ended = true;
 }
 
-},{"./index.js":11,"buffer":3,"inherits":7,"process/browser.js":12}],17:[function(require,module,exports){
+},{"./index.js":10,"buffer":2,"inherits":6,"process/browser.js":11}],16:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -3925,14 +4026,14 @@ function base64DetectIncompleteChar(buffer) {
   return incomplete;
 }
 
-},{"buffer":3}],18:[function(require,module,exports){
+},{"buffer":2}],17:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -4521,8 +4622,8 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-}).call(this,require("/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":18,"/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":8,"inherits":7}],20:[function(require,module,exports){
+}).call(this,require("/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":17,"/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":7,"inherits":6}],19:[function(require,module,exports){
 (function (process){
 var defined = require('defined');
 var createDefaultStream = require('./lib/default_stream');
@@ -4531,7 +4632,7 @@ var createResult = require('./lib/results');
 var through = require('through');
 
 var canEmitExit = typeof process !== 'undefined' && process
-    && typeof process.on === 'function'
+    && typeof process.on === 'function' && process.browser !== true
 ;
 var canExit = typeof process !== 'undefined' && process
     && typeof process.exit === 'function'
@@ -4624,6 +4725,7 @@ function createExitHarness (conf) {
 exports.createHarness = createHarness;
 exports.Test = Test;
 exports.test = exports; // tap compat
+exports.test.skip = Test.skip;
 
 var exitInterval;
 
@@ -4672,8 +4774,8 @@ function createHarness (conf_) {
     return test;
 }
 
-}).call(this,require("/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"./lib/default_stream":21,"./lib/results":22,"./lib/test":23,"/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":8,"defined":27,"through":31}],21:[function(require,module,exports){
+}).call(this,require("/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+},{"./lib/default_stream":20,"./lib/results":21,"./lib/test":22,"/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":7,"defined":26,"through":30}],20:[function(require,module,exports){
 var through = require('through');
 
 module.exports = function () {
@@ -4699,7 +4801,7 @@ module.exports = function () {
     }
 };
 
-},{"through":31}],22:[function(require,module,exports){
+},{"through":30}],21:[function(require,module,exports){
 (function (process){
 var EventEmitter = require('events').EventEmitter;
 var inherits = require('inherits');
@@ -4891,8 +4993,8 @@ function has (obj, prop) {
     return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-}).call(this,require("/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":8,"events":6,"inherits":28,"object-inspect":29,"resumer":30,"through":31}],23:[function(require,module,exports){
+}).call(this,require("/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+},{"/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":7,"events":5,"inherits":27,"object-inspect":28,"resumer":29,"through":30}],22:[function(require,module,exports){
 (function (process,__dirname){
 var Stream = require('stream');
 var deepEqual = require('deep-equal');
@@ -4910,32 +5012,39 @@ var nextTick = typeof setImmediate !== 'undefined'
 
 inherits(Test, EventEmitter);
 
-function Test (name_, opts_, cb_) {
-    var self = this;
+var getTestArgs = function (name_, opts_, cb_) {
     var name = '(anonymous)';
     var opts = {};
     var cb;
     
     for (var i = 0; i < arguments.length; i++) {
-        switch (typeof arguments[i]) {
-            case 'string':
-                name = arguments[i];
-                break;
-            case 'object':
-                opts = arguments[i] || opts;
-                break;
-            case 'function':
-                cb = arguments[i];
+        var arg = arguments[i];
+        var t = typeof arg;
+        if (t === 'string') {
+            name = arg;
+        }
+        else if (t === 'object') {
+            opts = arg || opts;
+        }
+        else if (t === 'function') {
+            cb = arg;
         }
     }
+    return { name: name, opts: opts, cb: cb };
+};
+
+function Test (name_, opts_, cb_) {
+    var self = this;
+    
+    var args = getTestArgs(name_, opts_, cb_);
     
     this.readable = true;
-    this.name = name || '(anonymous)';
+    this.name = args.name || '(anonymous)';
     this.assertCount = 0;
     this.pendingCount = 0;
-    this._skip = opts.skip || false;
+    this._skip = args.opts.skip || false;
     this._plan = undefined;
-    this._cb = cb;
+    this._cb = args.cb;
     this._progeny = [];
     this._ok = true;
     this.end = function () {
@@ -4968,13 +5077,13 @@ Test.prototype.test = function (name, opts, cb) {
     t.on('prerun', function () {
         self.assertCount++;
     })
-
+    
     if (!self._pendingAsserts()) {
         nextTick(function () {
             self._end();
         });
     }
-
+    
     nextTick(function() {
         if (!self._plan && self.pendingCount == self._progeny.length) {
             self._end();
@@ -5339,10 +5448,16 @@ function has (obj, prop) {
     return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
+Test.skip = function (name_, _opts, _cb) {
+    var args = getTestArgs.apply(null, arguments);
+    args.opts.skip = true;
+    return Test(args.name, args.opts, args.cb);
+};
+
 // vim: set softtabstop=4 shiftwidth=4:
 
-}).call(this,require("/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),"/../node_modules/tape/lib")
-},{"/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":8,"deep-equal":24,"defined":27,"events":6,"path":9,"stream":11,"util":19}],24:[function(require,module,exports){
+}).call(this,require("/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),"/../node_modules/tape/lib")
+},{"/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":7,"deep-equal":23,"defined":26,"events":5,"path":8,"stream":10,"util":18}],23:[function(require,module,exports){
 var pSlice = Array.prototype.slice;
 var objectKeys = require('./lib/keys.js');
 var isArguments = require('./lib/is_arguments.js');
@@ -5438,7 +5553,7 @@ function objEquiv(a, b, opts) {
   return true;
 }
 
-},{"./lib/is_arguments.js":25,"./lib/keys.js":26}],25:[function(require,module,exports){
+},{"./lib/is_arguments.js":24,"./lib/keys.js":25}],24:[function(require,module,exports){
 var supportsArgumentsClass = (function(){
   return Object.prototype.toString.call(arguments)
 })() == '[object Arguments]';
@@ -5460,7 +5575,7 @@ function unsupported(object){
     false;
 };
 
-},{}],26:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 exports = module.exports = typeof Object.keys === 'function'
   ? Object.keys : shim;
 
@@ -5471,16 +5586,16 @@ function shim (obj) {
   return keys;
 }
 
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = function () {
     for (var i = 0; i < arguments.length; i++) {
         if (arguments[i] !== undefined) return arguments[i];
     }
 };
 
+},{}],27:[function(require,module,exports){
+module.exports=require(6)
 },{}],28:[function(require,module,exports){
-module.exports=require(7)
-},{}],29:[function(require,module,exports){
 module.exports = function inspect_ (obj, opts, depth, seen) {
     if (!opts) opts = {};
     
@@ -5502,7 +5617,7 @@ module.exports = function inspect_ (obj, opts, depth, seen) {
     }
     
     if (typeof obj === 'string') {
-        return "'" + obj.replace(/(['\\])/g, '\\$1') + "'";
+        return inspectString(obj);
     }
     else if (typeof obj === 'function') {
         var name = nameOf(obj);
@@ -5597,7 +5712,19 @@ function isElement (x) {
     ;
 }
 
-},{}],30:[function(require,module,exports){
+function inspectString (str) {
+    var s = str.replace(/(['\\])/g, '\\$1').replace(/[\x00-\x1f]/g, lowbyte);
+    return "'" + s + "'";
+    
+    function lowbyte (c) {
+        var n = c.charCodeAt(0);
+        var x = { 8: 'b', 9: 't', 10: 'n', 12: 'f', 13: 'r' }[n];
+        if (x) return '\\' + x;
+        return '\\x' + (n < 0x10 ? '0' : '') + n.toString(16);
+    }
+}
+
+},{}],29:[function(require,module,exports){
 (function (process){
 var through = require('through');
 var nextTick = typeof setImmediate !== 'undefined'
@@ -5629,8 +5756,8 @@ module.exports = function (write, end) {
     return tr;
 };
 
-}).call(this,require("/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":8,"through":31}],31:[function(require,module,exports){
+}).call(this,require("/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+},{"/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":7,"through":30}],30:[function(require,module,exports){
 (function (process){
 var Stream = require('stream')
 
@@ -5741,169 +5868,227 @@ function through (write, end, opts) {
 }
 
 
-}).call(this,require("/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"/Users/philip/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":8,"stream":11}],32:[function(require,module,exports){
-var test = require('tape');
-var Klass = require('./fixtures/klass');
-
-test('accessor methods', function(t) {
-
-  t.plan(5);
-
-  var obj = new Klass();
-
-  // Public properties can be seen as normal.
-  t.equals(obj.pub, 'I am public.');
-
-  // Private properties are not accessible.
-  t.notOk(obj.priv);
-
-  // The getters and setters work just you'd expect
-  t.equals(obj.getPriv(), 'I am private.');
-
-  obj.setPriv('I have been set!');
-  t.equals(obj.getPriv(), 'I have been set!');
-
-  // After using the getters and setters, the
-  // private property still can't be seen
-  t.notOk(obj.priv);
-
-});
-
-},{"./fixtures/klass":34,"tape":20}],33:[function(require,module,exports){
+}).call(this,require("/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+},{"/Users/philipwalton/Projects/private-parts/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":7,"stream":10}],31:[function(require,module,exports){
 var test = require('tape');
 var createKey = require('..').createKey;
 
-test('createKey'
-  + ' encloses an instance of PrivateParts#get', function(t) {
+test('It accepts an object and returns an object.', function(t) {
+  t.plan(1);
+
+  var _ = createKey();
+  t.ok(_({}));
+});
+
+test('It returns undefined if given a non-object.', function(t) {
+  t.plan(1);
+
+  var _ = createKey();
+  t.notOk(_());
+});
+
+test('It always returns the same private object'
+  + ' given the same public object.', function(t) {
+
+  t.plan(1);
+
+  var _ = createKey();
+  var pub = {};
+
+  t.equal(_(pub), _(pub));
+});
+
+test('It will not double privatize an object.', function(t) {
+  t.plan(1);
+
+  var _ = createKey();
+  var pub = {};
+
+  t.equal(_(_(pub)), _(pub));
+});
+
+test('If a factory method is passed,'
+  + ' it will use it to create the private object.', function(t) {
+
+  t.plan(1);
+
+  var factory = function(obj) {
+    return { contains: obj };
+  };
+
+  var pub = {};
+  var _ = createKey(factory);
+
+  t.deepEqual(_(pub), { contains: pub });
+});
+
+test('If factory is an object, it will create new objects'
+  + ' with factory as their prototype.', function(t) {
+
+  t.plan(1);
+
+  var obj = {};
+  var _ = createKey(obj);
+
+  t.equal(Object.getPrototypeOf(_({})), obj);
+});
+
+
+test('If no factory method is passed, it will default '
+  + ' to creating a plain old JavaScript object.', function(t) {
+
+  t.plan(2);
+
+  var _ = createKey();
+
+  t.deepEqual(_({}), {});
+  t.equal(Object.getPrototypeOf(_({})), Object.prototype);
+});
+
+test('Given the same public object, two different stores'
+  + ' will return two different private objects.', function(t) {
 
   t.plan(1);
 
   var _1 = createKey();
   var _2 = createKey();
-  var obj = {};
+  var pub = {};
 
-  // make sure each invocation of `createKey()`
-  // creates a unique PrivateParts instance
-  t.notEqual(_1(obj), _2(obj));
+  t.notEqual(_1(pub), _2(pub));
 });
 
-test('createKey'
-  + ' does not leak private variables outside of a scope', function(t) {
+test('It does not leak values outside of a scope', function(t) {
 
   t.plan(3);
 
-  var obj = {};
+  var pub = {};
 
   (function() {
     // inner scope 1
     var _ = createKey();
 
-    _(obj).foo = 'foo';
-    _(obj).bar = 'bar';
+    _(pub).foo = 'foo';
+    _(pub).bar = 'bar';
 
-    t.deepEqual(_(obj), { foo: 'foo', bar: 'bar' });
+    t.deepEqual(_(pub), { foo: 'foo', bar: 'bar' });
   }());
 
   (function() {
     // inner scope 2
     var _ = createKey();
 
-    _(obj).fizz = 'fizz';
-    _(obj).buzz = 'buzz';
+    _(pub).fizz = 'fizz';
+    _(pub).buzz = 'buzz';
 
-    t.deepEqual(_(obj), { fizz: 'fizz', buzz: 'buzz' });
+    t.deepEqual(_(pub), { fizz: 'fizz', buzz: 'buzz' });
   }());
 
   // outer scope
   var _ = createKey();
-  t.deepEqual(_(obj), {});
+  t.deepEqual(_(pub), {});
 });
 
-},{"..":1,"tape":20}],34:[function(require,module,exports){
-var _ = require('../../').createKey();
-
-function Klass() {
-
-  // This is a public property. It will be accessible to
-  // anyone who has access to the instance.
-  this.pub = 'I am public.';
-
-  // This is a private property. It's not accessible outside
-  // of this scope of the `_` variable required above
-  _(this).priv = 'I am private.';
+},{"..":1,"tape":19}],32:[function(require,module,exports){
+function Car() {
+  _(this).mileage = 0;
+  _(this).mileageAtLastOilChange = 0;
+  _(this).mileageAtLastTireRotation = 0;
 }
 
-Klass.prototype.getPriv = function() {
-  return _(this).priv;
+// Add methods to the public prototype.
+Car.prototype.drive = function(miles) {
+  if (typeof miles == 'number' && miles > 0) {
+    _(this).mileage += miles;
+  } else {
+    throw new Error('drive only accepts positive numbers');
+  }
 };
 
-Klass.prototype.setPriv = function(value) {
-  _(this).priv = value;
+Car.prototype.getMileage = function() {
+  return _(this).mileage;
 };
 
-module.exports = Klass;
+Car.prototype.getMilesSinceLastOilChange = function() {
+  return _(this).mileage - _(this).mileageAtLastOilChange;
+};
 
-},{"../../":1}],35:[function(require,module,exports){
+Car.prototype.getMilesSinceLastTireRotation = function() {
+  return _(this).mileage - _(this).mileageAtLastTireRotation;
+};
+
+Car.prototype.changeOil = function() {
+  if ( _(this).shouldChangeOil() ) {
+    _(this).mileageAtLastOilChange = _(this).mileage;
+  } else {
+    return('No oil change is needed at this time.');
+  }
+};
+
+Car.prototype.rotateTires = function() {
+  if ( _(this).shouldRotateTires() ) {
+    _(this).mileageAtLastTireRotation = _(this).mileage;
+  } else {
+    return('No tire rotation is needed at this time.');
+  }
+};
+
+// Create the 'private prototype'.
+var privateMethods = Object.create(Car.prototype);
+
+// Add methods to the 'private prototype'.
+privateMethods.shouldChangeOil = function() {
+  return this.getMilesSinceLastOilChange() > 5000 ? true : false;
+};
+
+privateMethods.shouldRotateTires = function() {
+  return this.getMilesSinceLastTireRotation() > 5000 ? true : false;
+};
+
+// Create the key function with setting the private methods.
+var _ = require('../../').createKey(privateMethods);
+
+module.exports = Car;
+
+
+},{"../../":1}],33:[function(require,module,exports){
 var test = require('tape');
-var PrivatePart = require('../lib/private-part');
+var Car = require('./fixtures/car');
 
-test('PrivatePart#get'
-  + ' accepts an object and returns its private counterpart', function (t) {
+test('accessor methods', function(t) {
 
-  t.plan(4);
+  t.plan(3);
 
-  var p = new PrivatePart();
-  var obj1 = {};
-  var obj2 = {};
+  var honda = new Car();
+  honda.drive(1000);
+  t.equals(honda.getMileage(), 1000);
 
-  p.get(obj1).foo = 'bar';
-  p.get(obj1).fizz = 'buzz';
+  honda.drive(2000);
+  t.equals(honda.getMileage(), 3000);
 
-  p.get(obj2).foo = 'BAR';
-  p.get(obj2).fizz = 'BUZZ';
+  t.notOk(honda.mileage);
+});
 
-  // No private variables should be stored on the instance,
-  // they should only be stored on the private counterpart.
-  t.deepEqual(obj1, {});
-  t.deepEqual(obj2, {});
+test('private methods', function(t) {
 
-  t.deepEqual(p.get(obj1), { foo: 'bar', fizz: 'buzz' });
-  t.deepEqual(p.get(obj2), { foo: 'BAR', fizz: 'BUZZ' });
+  t.plan(7);
+
+  var honda = new Car();
+  honda.drive(3000);
+
+  t.equals(honda.getMilesSinceLastOilChange(), 3000);
+  t.equals(honda.getMilesSinceLastTireRotation(), 3000);
+
+  honda.drive(3000);
+  honda.changeOil();
+
+  t.equals(honda.getMilesSinceLastOilChange(), 0);
+  t.equals(honda.changeOil(), 'No oil change is needed at this time.');
+  t.equals(honda.getMilesSinceLastTireRotation(), 6000);
+
+  honda.rotateTires();
+  t.equals(honda.getMilesSinceLastTireRotation(), 0);
+  t.equals(honda.rotateTires(), 'No tire rotation is needed at this time.');
 
 });
 
-test('PrivatePart#get'
-  + ' returns a private object with the passed object as its prototype'
-  + ' so it can access both private and public properties', function (t) {
-
-  t.plan(1);
-
-  var p = new PrivatePart();
-
-  var obj = {};
-  var priv = p.get(obj);
-
-  t.ok(obj.isPrototypeOf(priv));
-
-});
-
-test('PrivatePart#get'
-  + ' can handle an object that has already been processed by another'
-  + ' PrivatePart instance', function(t) {
-
-  t.plan(2);
-
-  var p1 = new PrivatePart();
-  var p2 = new PrivatePart();
-  var obj = {};
-
-  p1.get(obj).name = 'foo';
-  p2.get(obj).name = 'bar';
-
-  t.deepEqual(p1.get(obj), { name: 'foo' });
-  t.deepEqual(p2.get(obj), { name: 'bar' });
-
-});
-
-},{"../lib/private-part":2,"tape":20}]},{},[32,33,35])
+},{"./fixtures/car":32,"tape":19}]},{},[31,33])
