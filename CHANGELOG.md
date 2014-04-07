@@ -1,4 +1,4 @@
-### 0.4.0
+### 0.4.0 (April 6, 2014)
 
 * Update the key function to accept both a prototype object or a function that will be used to create private instances that don't yet exist.
 
