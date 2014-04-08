@@ -5,7 +5,7 @@ Private Parts
 
 1. [Introduction](#introduction)
 2. [How It Works](#how-it-works)
-3. [API](#api)
+3. [API Documentation](#api-documentation)
 4. [Installation](#installation)
 5. [Browser and Environment Support](#browser-and-environment-support)
 6. [Building and Testing](#building-and-testing)
@@ -163,15 +163,15 @@ _(this)  >>>  privateMethods  >>>  SomeClass.prototype
 
 For a complete example that showcases both private properties and methods, check out the [Car fixture](https://github.com/philipwalton/private-parts/blob/master/test/fixtures/car.js) in the tests directory. This is the example class that many of the tests are based on.
 
-## API
+## API Documentation
 
-#### `_(obj)`
+#### _(obj)
 
 The key function, usually stored on the `_` (underscore) variable, acts as an accessor to the private store. It accepts an object (the "public instance") and returns the object associated with that passed object (the "private instance"). If no private instance counterpart exists, a new one is created.
 
 The method in which new private instances are created is determined by the argument passed to the `createKey` factory method, as described next:
 
-#### `createKey(fn)`
+#### createKey(fn)
 
 When `createKey` is passed a function, that function is used to create new private instances (when the key function receives a public instance it's never seen before). The passed function (the creator function) is invoked with the public instance as its first argument.
 
@@ -185,7 +185,7 @@ var _ = createKey(function(publicInstance) {
 _({foo:'bar'}) // returns { __public__: {foo:'bar'}}
 ```
 
-#### `createKey(obj)`
+#### createKey(obj)
 
 When `createKey` receives an object instead of a function, it actually creates a function behind the scenes by binding the passed object to `Object.create`. This effectively means that newly created instances will have the object passed to `createKey` as their prototype:
 
@@ -197,7 +197,7 @@ createKey(someObj);
 createKey(Object.create.bind(null, someObj, {}));
 ```
 
-#### `createKey()`
+#### createKey()
 
 If nothing is passed to `createKey`, a plain old JavaScript object is created.
 
