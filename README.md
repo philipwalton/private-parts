@@ -163,6 +163,8 @@ _(this)  >>>  privateMethods  >>>  SomeClass.prototype
 
 For a complete example that showcases both private properties and methods, check out the [Car fixture](https://github.com/philipwalton/private-parts/blob/master/test/fixtures/car.js) in the tests directory. This is the example class that many of the tests are based on.
 
+For a more out-of-the-box solution, check out the [Mozart](https://github.com/philipwalton/mozart) library, a classical inheritance implementation that uses Private Parts to acheive public, protected, and private methods in its class heirarchies.
+
 ## API Documentation
 
 #### _(obj)
