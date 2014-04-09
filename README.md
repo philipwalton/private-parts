@@ -262,7 +262,7 @@ module.exports = Car;
 In the browser via AMD:
 
 ```javascript
-define(['parth/to/private-parts.js'], function(PrivateParts) {
+define(['parth/to/private-parts'], function(PrivateParts) {
 
   var _ = PrivateParts.createKey();
 
