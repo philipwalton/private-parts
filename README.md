@@ -115,55 +115,64 @@ SomeClass.prototype.setPrivateProperty = function(value) {
 
 Note that you don't need to check if the private instance exists before using it. The key function automatically creates a private instance if one doesn't exist, and it returns the private instance if it does.
 
-### Controlling the Prototype Chain
+### Customizing the Private Instance
+
 
 When you pass a public instance to the key function and get a private instance back, the private instance (by default) will be a plain old JavaScript object.
 
 ```javascript
 var _ = require('private-parts').createKey();
 
-// The prototype chain looks like this:
+// The prototype chain will look like this:
 _(this)  >>>  Object.prototype
 ```
 
-This is okay for some situations, but if your private instance needs to access any prototype methods, this won't work.
+This is okay for most situations, but sometimes you want a bit more control over how your private instances are created. Most commonly, you'll want to initialize some properties or set their prototype.
 
-Luckily, this behavior can be changed. The `createKey` function takes an optional argument that can be used to control how private instances are created. If the optional argument is an object, new private instances will be created with that object as their prototype. (Note, the optional argument can also be a function, for more information on passing a function to `createKey`, see the [API](#api) section.)
+To specify how the private instances are created, you can pass a creator function to the `createKey` method. This creator function will be invoked with the public instance as its first argument and the private instance will be the return value.
 
-To give your private instances access to the public prototype, simply pass the prototype to `createKey`.
+For example, if you want the private instance to have a reference back to the public instance, you could do something like this:
 
 ```javascript
-var _ = require('private-parts').createKey(SomeClass.prototype);
+var _ = createKey(function(publicInstance) {
+  return { __public__: publicInstance };
+})
+
+_({foo:'bar'}) // returns { __public__: {foo:'bar'}}
+```
+
+Perhaps the most common customization need for private instances is to set their prototype at creation time. This is allows you to let all private instances share a common set of methods &mdash; effectively a private prototype.
+
+You can do this by passing an object to `createKey` instead of a function. When an object is passed, new instances are created via `Object.create` and your passed object is used as the prototype. The following example illustrates this.
+
+```javascript
+// These two statements are equivalent.
+var _ = createKey(someObj);
+var _ = createKey(Object.create.bind(null, someObj, {}));
 
 // The prototype chain now looks like this:
-_(this)  >>>  SomeClass.prototype
+_(this)  >>>  someObj
 ```
 
-There's actually a lot more power here than may be initially apparent. Being able to set the prototype of the private instances gives you the ability to create a set of shared methods that are accessible to private instances but not public ones. Essentially, you can create a private prototype!
+This technique can be very powerful. If you create a private object from the constructor prototype (using `Object.create`), set some methods on it, and then pass that object to `createKey` you'll end up with private instances that have both the private and public methods in their prototype chain. Here's an example.
 
 ```javascript
-var privateMethods = { /* ... */ };
+var privateMethods = Object.create(SomeClass.prototype);
+privateMethods.privateMethodOne = function() {...}
+privateMethods.privateMethodTwo = function() {...}
+
 var _ = require('private-parts').createKey(privateMethods);
 
-// Now the prototype chain now looks like this:
-_(this)  >>>  privateMethods
-```
-
-Taking this one step further, if the private methods object is created with the public prototype as its prototype (using `Object.create`), your private instances will now have access to both public and private methods.
-
-```javascript
-var privateMethods = Object.create(SomeClass.prototype, { /* ... */ };
-var _ = require('private-parts').createKey(privateMethods);
-
-// The ultimate prototype chain.
+// The prototype chain now looks like this:
 _(this)  >>>  privateMethods  >>>  SomeClass.prototype
+
+// And public instances will not be able to see private methods:
+this  >>>  SomeClass.prototype
 ```
 
-### A Complete Example
+For a complete example illustrating this technique, check out the [Car fixture](https://github.com/philipwalton/private-parts/blob/master/test/fixtures/car.js) in the tests directory. This example class is what many of the tests are based on.
 
-For a complete example that showcases both private properties and methods, check out the [Car fixture](https://github.com/philipwalton/private-parts/blob/master/test/fixtures/car.js) in the tests directory. This is the example class that many of the tests are based on.
-
-For a more out-of-the-box solution, check out the [Mozart](https://github.com/philipwalton/mozart) library, a classical inheritance implementation that uses Private Parts to acheive public, protected, and private methods in its class heirarchies.
+And for a more out-of-the-box solution, check out the [Mozart](https://github.com/philipwalton/mozart) library, a classical inheritance implementation that uses Private Parts to acheive public, protected, and private methods in its class heirarchies.
 
 ## API Documentation
 
@@ -175,40 +184,15 @@ The method in which new private instances are created is determined by the argum
 
 #### createKey(fn)
 
-When `createKey` is passed a function, that function is used to create new private instances (when the key function receives a public instance it's never seen before). The passed function (the creator function) is invoked with the public instance as its first argument.
-
-For example, if you wanted all private instances to have a reference back to the public instance, you could do the following:
-
-```javascript
-var _ = createKey(function(publicInstance) {
-  return { __public__: publicInstance };
-})
-
-_({foo:'bar'}) // returns { __public__: {foo:'bar'}}
-```
+When `createKey` is passed a function, that function is used to create new private instances. The passed function (the creator function) is invoked with the public instance as its first argument. The return value of the creator function becomes the private instance.
 
 #### createKey(obj)
 
-When `createKey` receives an object instead of a function, it actually creates a function behind the scenes by binding the passed object to `Object.create`. This effectively means that newly created instances will have the object passed to `createKey` as their prototype:
-
-```javascript
-var someObj = { /* ... */ };
-
-// Given `someObj`, the following two expressions are equivalent.
-createKey(someObj);
-createKey(Object.create.bind(null, someObj, {}));
-```
+When `createKey` receives an object instead of a function, it actually creates a function behind the scenes by binding the passed object to `Object.create`. This effectively means that newly created instances will have the object passed to `createKey` as their prototype.
 
 #### createKey()
 
 If nothing is passed to `createKey`, a plain old JavaScript object is created.
-
-```javascript
-// The following three expressions are equivalent.
-createKey();
-createKey(Object.prototype);
-createKey(Object.create.bind(null, Object.prototype, {}));
-```
 
 ## Installation
 
@@ -237,11 +221,9 @@ Private Parts has [been tested](https://ci.testling.com/philipwalton/private-par
 * Internet Explorer 9+
 * Opera 12+
 
-Private Parts works in both Node and the browser. It uses the UMD pattern, so it can be included in your application as either an AMD module or a global variable.
+Private Parts works in both Node and the browser. It uses the UMD pattern, so it can be included in your application as either an AMD module or a the global variable `PrivateParts`.
 
-It's important to note that Private Parts uses the [ES6 WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) data structure. **If you need to support an environment without WeakMaps, you can still use Private Parts, you just have to include one of the many available polyfills**.
-
-I use this [WeakMap Polyfill](https://github.com/Benvie/WeakMap) by Brandon Benvie of Mozilla, which gives me the browser support I list above. If you need better support you should use a different polyfill along with an ES5 shim (for IE8 and lower).
+It's important to note that Private Parts uses the [ES6 WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) data structure. **If you need to support an environment without WeakMaps, you can still use Private Parts, you just have to include one of the many available polyfills**. I use this [WeakMap Polyfill](https://github.com/Benvie/WeakMap) by Brandon Benvie of Mozilla, which gives me the browser support I list above. If you need better support you should use a different polyfill along with an ES5 shim (for IE8 and lower).
 
 For a list of environments that support WeakMap natively, see [Kangax's ES6 compatibility tables](http://kangax.github.io/es5-compat-table/es6/#WeakMap).
 
