@@ -12,7 +12,7 @@ Private Parts
 
 The Private Parts module provides a simple and intuitive way to shim private methods and properties in JavaScript. It's small, easy to use, requires minimal setup, and works in both node and the browser.
 
-For more information on how Private Parts works and the problems it solves, see my [article introducing it](http://philipwalton.com/articles/implementing-private-and-protected-members-in-javascript/).
+For more information on how Private Parts works and the problems it solves, see my [article introducing it](http://philipwalton.com/articles/implementing-private-and-protected-members-in-javascript/?utm_source=github).
 
 ## Introduction
 
