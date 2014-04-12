@@ -11,10 +11,12 @@
     "url": "git://github.com/philipwalton/private-parts.git"
   },
   "keywords": [
+    "shim",
     "private",
+    "property",
     "instance",
     "variable",
-    "shim"
+    "weakmap"
   ],
   "author": "philipwalton",
   "license": "MIT",

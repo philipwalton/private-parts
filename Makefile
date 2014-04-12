@@ -24,9 +24,10 @@ test-browser: $(test)
 test: test-node test-browser
 
 private-parts.js: $(src)
-	@ $(bins)/browserify -s PrivateParts index.js \
-		| $(bins)/uglifyjs \
-		> private-parts.js
+	@ $(bins)/browserify -s PrivateParts index.js > private-parts.js
+
+private-parts.min.js: private-parts.js
+	@ $(bins)/uglifyjs $^ > private-parts.min.js
 
 build: private-parts.js
 	@ cp $(mods)/weakmap/weakmap.js test/browser/weakmap.js
