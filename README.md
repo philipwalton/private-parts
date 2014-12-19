@@ -283,7 +283,7 @@ In node:
 
 ```javascript
 // Put this code year the main entry point of your app.
-if (!('WeakMap' in global)) global.WeakMap = require('weapmap');
+if (!('WeakMap' in global)) global.WeakMap = require('weakmap');
 ```
 
 In the browser:
